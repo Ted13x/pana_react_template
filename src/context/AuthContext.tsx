@@ -1,5 +1,9 @@
 import React, { createContext, useState, useEffect, ReactNode } from "react";
-import { PanaStoreClient, PanaCustomerClient } from "@pana-commerce/pana-sdk";
+import {
+  PanaStoreClient,
+  PanaCustomerClient,
+  RegisterStoreCustomerDtoCustomerType,
+} from "@pana-commerce/pana-sdk";
 import { initSecurity, secureStorage } from "../utils/security";
 import type {
   StoreCustomer,
@@ -28,7 +32,6 @@ export interface AuthContextType {
     firstName: string,
     lastName: string,
     customPropertyValues: []
-    test: string
   ) => Promise<boolean>;
   logout: () => Promise<void>;
   storeClient: PanaStoreClient | null;
@@ -208,6 +211,7 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({
         firstName,
         lastName,
         customPropertyValues,
+        customerType: RegisterStoreCustomerDtoCustomerType.individual,
       });
 
       if (!registrationResult) {
