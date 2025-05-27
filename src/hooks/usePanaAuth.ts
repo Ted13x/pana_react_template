@@ -1,10 +1,10 @@
-import { useContext } from 'react';
-import { PanaCustomerContext } from '../context/PanaCustomerContext';
-import type { Customer } from '../context/PanaCustomerContext';
+import { useContext } from "react";
+import { PanaCustomerContext } from "../context/PanaCustomerContext";
+import { StoreCustomer } from "@pana-commerce/pana-sdk/dist/public-api";
 
 interface UsePanaAuthReturn {
   isAuthenticated: boolean;
-  customer: Customer | null;
+  customer: StoreCustomer | null;
   loading: boolean;
   error: string | null;
   login: (email: string, password: string) => Promise<boolean>;
@@ -17,7 +17,10 @@ interface UsePanaAuthReturn {
     customPropertyValues: []
   ) => Promise<boolean>;
 
-  changePassword: (oldPassword: string, newPassword: string) => Promise<boolean>;
+  changePassword: (
+    oldPassword: string,
+    newPassword: string
+  ) => Promise<boolean>;
   changeEmail: (newEmail: string) => Promise<boolean>;
 }
 

@@ -1,7 +1,9 @@
 // src/components/products/ProductList.tsx
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useContext } from "react";
 import { useNavigate } from "react-router-dom";
 import { usePanaProducts } from "../../hooks/usePanaProducts";
+import { CartContext } from "../../context/CartContext";
+import { AuthContext } from "../../context/AuthContext";
 import styles from "./ProductList.module.scss";
 
 const ProductList = () => {
@@ -14,7 +16,10 @@ const ProductList = () => {
     searchTerm,
     setSearchTerm,
   } = usePanaProducts();
+  const { addToCart, loading: cartLoading } = useContext(CartContext);
+  const { isAuthenticated } = useContext(AuthContext);
   const [isGridView, setIsGridView] = useState(true);
+  const [addingToCart, setAddingToCart] = useState<number | null>(null);
 
   // Status für die ausgewählten Varianten und Bildindizes pro Produkt
   const [selectedVariants, setSelectedVariants] = useState<{
@@ -67,6 +72,47 @@ const ProductList = () => {
       ...prev,
       [variantKey]: 0,
     }));
+  };
+
+  const handleAddToCart = async (
+    e: React.MouseEvent,
+    productId: number,
+    variantId: number
+  ) => {
+    e.stopPropagation();
+
+    if (!isAuthenticated) {
+      // Wenn nicht eingeloggt, zum Login weiterleiten
+      navigate("/login", {
+        state: {
+          redirect: "/",
+          message:
+            "Bitte melden Sie sich an, um Artikel zum Warenkorb hinzuzufügen.",
+        },
+      });
+      return;
+    }
+
+    setAddingToCart(variantId);
+
+    try {
+      const success = await addToCart(variantId, 1);
+      if (success) {
+        console.log(
+          `Variante ${variantId} erfolgreich zum Warenkorb hinzugefügt`
+        );
+        // Optional: Erfolgs-Feedback anzeigen
+      } else {
+        console.error(
+          `Fehler beim Hinzufügen der Variante ${variantId} zum Warenkorb`
+        );
+        // Optional: Fehler-Feedback anzeigen
+      }
+    } catch (error) {
+      console.error("Fehler beim Hinzufügen zum Warenkorb:", error);
+    } finally {
+      setAddingToCart(null);
+    }
   };
 
   const navigateImage = (
@@ -359,17 +405,14 @@ const ProductList = () => {
               <div className={styles.productActions}>
                 <button
                   className={styles.addToCartButton}
-                  onClick={(e) => {
-                    e.stopPropagation();
-                    console.log(
-                      "Add to cart clicked for product",
-                      product.id,
-                      "variant",
-                      selectedVariant.id
-                    );
-                  }}
+                  onClick={(e) =>
+                    handleAddToCart(e, product.id, selectedVariant.id)
+                  }
+                  disabled={addingToCart === selectedVariant.id || cartLoading}
                 >
-                  In den Warenkorb
+                  {addingToCart === selectedVariant.id
+                    ? "Wird hinzugefügt..."
+                    : "In den Warenkorb"}
                 </button>
               </div>
             </div>

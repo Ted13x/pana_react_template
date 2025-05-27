@@ -1,47 +1,54 @@
-import { useContext } from 'react';
-import { PanaCustomerContext } from '../context/PanaCustomerContext';
-import type { ShoppingCart } from '../context/PanaCustomerContext';
+import { useContext } from "react";
+import { CartContext } from "../context/CartContext";
+import type { ShoppingCart, ShoppingCartItem } from "../context/CartContext";
 
 interface UsePanaCartReturn {
   // Cart data
   cart: ShoppingCart | null;
-  cartLoading: boolean;
-  cartError: string | null;
+  cartItems: ShoppingCartItem[];
+  cartTotal: number;
+  itemCount: number;
+  loading: boolean;
+  error: string | null;
 
   // Cart operations
-  refreshCart: () => Promise<void>;
-  addToCart: (productId: number, amount: number) => Promise<boolean>;
-  removeFromCart: (itemId: number) => Promise<boolean>;
+  addToCart: (variantId: number, quantity?: number) => Promise<boolean>;
+  removeFromCart: (cartItemId: number) => Promise<boolean>;
+  updateCartItemQuantity: (
+    cartItemId: number,
+    quantity: number
+  ) => Promise<boolean>;
   clearCart: () => Promise<boolean>;
-  checkout: () => Promise<any>;
-
-  // Authentication status (useful for checking if user can add to cart)
-  isAuthenticated: boolean;
+  refreshCart: () => Promise<void>;
 }
 
 export const usePanaCart = (): UsePanaCartReturn => {
   const {
     cart,
-    cartLoading,
-    cartError,
-    refreshCart,
+    cartItems,
+    cartTotal,
+    itemCount,
+    loading,
+    error,
     addToCart,
     removeFromCart,
+    updateCartItemQuantity,
     clearCart,
-    checkout,
-    isAuthenticated,
-  } = useContext(PanaCustomerContext);
+    refreshCart,
+  } = useContext(CartContext);
 
   return {
     cart,
-    cartLoading,
-    cartError,
-    refreshCart,
+    cartItems,
+    cartTotal,
+    itemCount,
+    loading,
+    error,
     addToCart,
     removeFromCart,
+    updateCartItemQuantity,
     clearCart,
-    checkout,
-    isAuthenticated,
+    refreshCart,
   };
 };
 

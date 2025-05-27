@@ -1,7 +1,8 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useContext } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import { usePanaProduct } from "../../hooks/usePanaProduct";
-import { usePanaCart } from "../../hooks/usePanaCart";
+import { CartContext } from "../../context/CartContext";
+import { AuthContext } from "../../context/AuthContext";
 import styles from "./ProductDetails.module.scss";
 
 const ProductDetails: React.FC = () => {
@@ -13,11 +14,13 @@ const ProductDetails: React.FC = () => {
     autoLoad: true,
   });
 
-  const { addToCart, isAuthenticated } = usePanaCart();
+  const { addToCart, loading: cartLoading } = useContext(CartContext);
+  const { isAuthenticated } = useContext(AuthContext);
 
   const [selectedVariantIndex, setSelectedVariantIndex] = useState<number>(0);
   const [currentImageIndex, setCurrentImageIndex] = useState<number>(0);
   const [quantity, setQuantity] = useState<number>(1);
+  const [isAddingToCart, setIsAddingToCart] = useState<boolean>(false);
 
   useEffect(() => {
     if (product && product.variants && product.variants.length > 0) {
@@ -73,15 +76,33 @@ const ProductDetails: React.FC = () => {
 
     const variant = product.variants[selectedVariantIndex];
 
+    if (!isAuthenticated) {
+      navigate("/login", {
+        state: {
+          redirect: `/product/${productId}`,
+          message:
+            "Bitte melden Sie sich an, um Artikel zum Warenkorb hinzuzufügen.",
+        },
+      });
+      return;
+    }
+
+    setIsAddingToCart(true);
+
     try {
-      if (isAuthenticated) {
-        await addToCart(variant.id, quantity);
+      const success = await addToCart(variant.id, quantity);
+      if (success) {
         console.log(`${quantity}x ${variant.name} zum Warenkorb hinzugefügt`);
+        // Optional: Erfolgs-Feedback anzeigen
+        // Könnte hier eine Toast-Nachricht oder ähnliches anzeigen
       } else {
-        navigate("/login", { state: { redirect: `/product/${productId}` } });
+        console.error("Fehler beim Hinzufügen zum Warenkorb");
+        // Optional: Fehler-Feedback anzeigen
       }
     } catch (error) {
       console.error("Fehler beim Hinzufügen zum Warenkorb:", error);
+    } finally {
+      setIsAddingToCart(false);
     }
   };
 
@@ -286,8 +307,12 @@ const ProductDetails: React.FC = () => {
             </div>
           </div>
 
-          <button className={styles.addToCartButton} onClick={handleAddToCart}>
-            In den Warenkorb
+          <button
+            className={styles.addToCartButton}
+            onClick={handleAddToCart}
+            disabled={isAddingToCart || cartLoading}
+          >
+            {isAddingToCart ? "Wird hinzugefügt..." : "In den Warenkorb"}
           </button>
 
           <div className={styles.productDescription}>

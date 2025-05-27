@@ -103,11 +103,12 @@ const Header = () => {
         setShowLoginDropdown(false);
         setEmail("");
         setPassword("");
-      } else {
+      }
+      /* else {
         setLoginError(
           "Anmeldung fehlgeschlagen. Bitte überprüfen Sie Ihre Eingaben."
         );
-      }
+      } */
     } catch (error) {
       setLoginError(
         "Ein Fehler ist aufgetreten. Bitte versuchen Sie es später erneut."

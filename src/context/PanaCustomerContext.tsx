@@ -5,14 +5,15 @@ import {
   RegisterStoreCustomerDtoCustomerType,
 } from "@pana-commerce/pana-sdk";
 import { secureStorage, initSecurity } from "../utils/security";
-import type { components } from "@pana-commerce/pana-sdk/dist/public-api";
-
-// Typen aus der SDK
-export type Customer = components["schemas"]["StoreCustomer"];
-export type Order = components["schemas"]["StoreCustomerOrder"];
-export type Address = components["schemas"]["StoreCustomerAddress"];
-export type ShoppingCart = components["schemas"]["StoreCustomerShoppingCart"];
-export type Wishlist = components["schemas"]["StoreCustomerWishlist"];
+import type {
+  components,
+  LoginResExternalDto,
+  StoreCustomer,
+  StoreCustomerAddress,
+  StoreCustomerOrder,
+  StoreCustomerShoppingCart,
+  StoreCustomerWishlist,
+} from "@pana-commerce/pana-sdk/dist/public-api";
 
 export interface PanaCustomerContextType {
   // Client und Auth-Status
@@ -21,12 +22,12 @@ export interface PanaCustomerContextType {
   authToken: string | null;
 
   // Customer Daten
-  customer: Customer | null;
+  customer: StoreCustomer | null;
   loading: boolean;
   error: string | null;
 
   // Shopping Cart
-  cart: ShoppingCart | null;
+  cart: StoreCustomerShoppingCart | null;
   cartLoading: boolean;
   cartError: string | null;
   refreshCart: () => Promise<void>;
@@ -35,20 +36,20 @@ export interface PanaCustomerContextType {
   clearCart: () => Promise<boolean>;
   checkout: () => Promise<any>;
 
-  // Wishlist
-  wishlists: Wishlist[] | null;
+  // StoreCustomerWishlist
+  wishlists: StoreCustomerWishlist[] | null;
   wishlistsLoading: boolean;
   wishlistsError: string | null;
   refreshWishlists: () => Promise<void>;
   createWishlist: (
     name: string,
     description?: string
-  ) => Promise<Wishlist | null>;
+  ) => Promise<StoreCustomerWishlist | null>;
   updateWishlist: (
     wishlistId: number,
     name: string,
     description?: string
-  ) => Promise<Wishlist | null>;
+  ) => Promise<StoreCustomerWishlist | null>;
   deleteWishlist: (wishlistId: number) => Promise<boolean>;
   addToWishlist: (wishlistId: number, productId: number) => Promise<boolean>;
   removeFromWishlist: (
@@ -57,26 +58,28 @@ export interface PanaCustomerContextType {
   ) => Promise<boolean>;
   clearWishlist: (wishlistId: number) => Promise<boolean>;
 
-  // Address
-  addresses: Address[] | null;
+  // StoreCustomerAddress
+  addresses: StoreCustomerAddress[] | null;
   addressesLoading: boolean;
   addressesError: string | null;
   refreshAddresses: () => Promise<void>;
-  createAddress: (addressData: Partial<Address>) => Promise<Address | null>;
+  createAddress: (
+    addressData: Partial<StoreCustomerAddress>
+  ) => Promise<StoreCustomerAddress | null>;
   updateAddress: (
     addressId: number,
-    addressData: Partial<Address>
-  ) => Promise<Address | null>;
+    addressData: Partial<StoreCustomerAddress>
+  ) => Promise<StoreCustomerAddress | null>;
   deleteAddress: (addressId: number) => Promise<boolean>;
   setDefaultAddress: (addressId: number) => Promise<boolean>;
 
   // Orders
-  orders: Order[] | null;
+  orders: StoreCustomerOrder[] | null;
   ordersLoading: boolean;
   ordersError: string | null;
   refreshOrders: () => Promise<void>;
-  getOrder: (orderId: number) => Promise<Order | null>;
-  // createOrder: (orderData: { comment?: string; addressId: number }) => Promise<Order | null>;
+  getOrder: (orderId: number) => Promise<StoreCustomerOrder | null>;
+  // createOrder: (orderData: { comment?: string; addressId: number }) => Promise<StoreCustomerOrder | null>;
 
   // Authentication
   login: (email: string, password: string) => Promise<boolean>;
@@ -89,7 +92,9 @@ export interface PanaCustomerContextType {
     customPropertyValues: []
   ) => Promise<boolean>;
   refreshCustomer: () => Promise<void>;
-  updateCustomer?: (data: Partial<Customer>) => Promise<Customer | null>;
+  updateCustomer?: (
+    data: Partial<StoreCustomer>
+  ) => Promise<StoreCustomer | null>;
   changePassword: (
     oldPassword: string,
     newPassword: string
@@ -172,27 +177,31 @@ export const PanaCustomerProvider: React.FC<PanaCustomerProviderProps> = ({
   const [authToken, setAuthToken] = useState<string | null>(null);
 
   // Customer States
-  const [customer, setCustomer] = useState<Customer | null>(null);
+  const [customer, setCustomer] = useState<StoreCustomer | null>(null);
   const [loading, setLoading] = useState<boolean>(true);
   const [error, setError] = useState<string | null>(null);
 
   // Shopping Cart States
-  const [cart, setCart] = useState<ShoppingCart | null>(null);
+  const [cart, setCart] = useState<StoreCustomerShoppingCart | null>(null);
   const [cartLoading, setCartLoading] = useState<boolean>(true);
   const [cartError, setCartError] = useState<string | null>(null);
 
-  // Wishlist States
-  const [wishlists, setWishlists] = useState<Wishlist[] | null>(null);
+  // StoreCustomerWishlist States
+  const [wishlists, setWishlists] = useState<StoreCustomerWishlist[] | null>(
+    null
+  );
   const [wishlistsLoading, setWishlistsLoading] = useState<boolean>(true);
   const [wishlistsError, setWishlistsError] = useState<string | null>(null);
 
-  // Address States
-  const [addresses, setAddresses] = useState<Address[] | null>(null);
+  // StoreCustomerAddress States
+  const [addresses, setAddresses] = useState<StoreCustomerAddress[] | null>(
+    null
+  );
   const [addressesLoading, setAddressesLoading] = useState<boolean>(true);
   const [addressesError, setAddressesError] = useState<string | null>(null);
 
-  // Order States
-  const [orders, setOrders] = useState<Order[] | null>(null);
+  // StoreCustomerOrder States
+  const [orders, setOrders] = useState<StoreCustomerOrder[] | null>(null);
   const [ordersLoading, setOrdersLoading] = useState<boolean>(true);
   const [ordersError, setOrdersError] = useState<string | null>(null);
 
@@ -300,7 +309,7 @@ export const PanaCustomerProvider: React.FC<PanaCustomerProviderProps> = ({
 
       // Kundendaten laden
       const userData = await client.getMe();
-      setCustomer(userData as Customer);
+      setCustomer(userData as StoreCustomer);
 
       setLoading(false);
       return true;
@@ -346,7 +355,6 @@ export const PanaCustomerProvider: React.FC<PanaCustomerProviderProps> = ({
         throw new Error("Store API Token fehlt");
       }
 
-      // Verwende den PanaStoreClient für Registrierung
       const { PanaStoreClient } = await import("@pana-commerce/pana-sdk");
       const storeClient = new PanaStoreClient(storeApiToken);
 
@@ -364,7 +372,6 @@ export const PanaCustomerProvider: React.FC<PanaCustomerProviderProps> = ({
         throw new Error("Registrierung fehlgeschlagen");
       }
 
-      // Nach erfolgreicher Registrierung einloggen
       return await login(email, password);
     } catch (error) {
       if (debug) {
@@ -388,7 +395,7 @@ export const PanaCustomerProvider: React.FC<PanaCustomerProviderProps> = ({
 
     try {
       const userData = await customerClient.getMe();
-      setCustomer(userData as Customer);
+      setCustomer(userData as StoreCustomer);
     } catch (error) {
       if (debug) {
         console.error("Error refreshing customer data:", error);
@@ -497,7 +504,6 @@ export const PanaCustomerProvider: React.FC<PanaCustomerProviderProps> = ({
     }
   };
 
-  // Shopping Cart Funktionen
   const refreshCart = async (): Promise<void> => {
     if (!customerClient || !isAuthenticated) {
       return;
@@ -508,7 +514,7 @@ export const PanaCustomerProvider: React.FC<PanaCustomerProviderProps> = ({
 
     try {
       const cartData = await customerClient.getShoppingCart();
-      setCart(cartData as ShoppingCart);
+      setCart(cartData as StoreCustomerShoppingCart);
     } catch (error) {
       if (debug) {
         console.error("Error refreshing cart:", error);
@@ -539,7 +545,7 @@ export const PanaCustomerProvider: React.FC<PanaCustomerProviderProps> = ({
         amount,
       });
       if (result) {
-        setCart(result as ShoppingCart);
+        setCart(result as StoreCustomerShoppingCart);
         return true;
       }
       return false;
@@ -569,7 +575,7 @@ export const PanaCustomerProvider: React.FC<PanaCustomerProviderProps> = ({
     try {
       const result = await customerClient.removeShoppingCartItem(itemId);
       if (result) {
-        setCart(result as ShoppingCart);
+        setCart(result as StoreCustomerShoppingCart);
         return true;
       }
       return false;
@@ -599,7 +605,7 @@ export const PanaCustomerProvider: React.FC<PanaCustomerProviderProps> = ({
     try {
       const result = await customerClient.clearShoppingCart();
       if (result) {
-        setCart(result as ShoppingCart);
+        setCart(result as StoreCustomerShoppingCart);
         return true;
       }
       return false;
@@ -643,7 +649,6 @@ export const PanaCustomerProvider: React.FC<PanaCustomerProviderProps> = ({
     }
   };
 
-  // Wishlist Funktionen
   const refreshWishlists = async (): Promise<void> => {
     if (!customerClient || !isAuthenticated) {
       return;
@@ -659,7 +664,7 @@ export const PanaCustomerProvider: React.FC<PanaCustomerProviderProps> = ({
       });
 
       if (response && response.data) {
-        setWishlists(response.data as Wishlist[]);
+        setWishlists(response.data as StoreCustomerWishlist[]);
       } else {
         setWishlists([]);
       }
@@ -680,7 +685,7 @@ export const PanaCustomerProvider: React.FC<PanaCustomerProviderProps> = ({
   const createWishlist = async (
     name: string,
     description?: string
-  ): Promise<Wishlist | null> => {
+  ): Promise<StoreCustomerWishlist | null> => {
     if (!customerClient || !isAuthenticated) {
       return null;
     }
@@ -695,7 +700,7 @@ export const PanaCustomerProvider: React.FC<PanaCustomerProviderProps> = ({
       });
 
       await refreshWishlists();
-      return wishlist as Wishlist;
+      return wishlist as StoreCustomerWishlist;
     } catch (error) {
       if (debug) {
         console.error("Error creating wishlist:", error);
@@ -715,7 +720,7 @@ export const PanaCustomerProvider: React.FC<PanaCustomerProviderProps> = ({
     wishlistId: number,
     name: string,
     description?: string
-  ): Promise<Wishlist | null> => {
+  ): Promise<StoreCustomerWishlist | null> => {
     if (!customerClient || !isAuthenticated) {
       return null;
     }
@@ -730,7 +735,7 @@ export const PanaCustomerProvider: React.FC<PanaCustomerProviderProps> = ({
       });
 
       await refreshWishlists();
-      return wishlist as Wishlist;
+      return wishlist as StoreCustomerWishlist;
     } catch (error) {
       if (debug) {
         console.error("Error updating wishlist:", error);
@@ -881,7 +886,7 @@ export const PanaCustomerProvider: React.FC<PanaCustomerProviderProps> = ({
       });
 
       if (response && response.data) {
-        setAddresses(response.data as Address[]);
+        setAddresses(response.data as StoreCustomerAddress[]);
       } else {
         setAddresses([]);
       }
@@ -900,8 +905,8 @@ export const PanaCustomerProvider: React.FC<PanaCustomerProviderProps> = ({
   };
 
   const createAddress = async (
-    addressData: Partial<Address>
-  ): Promise<Address | null> => {
+    addressData: Partial<StoreCustomerAddress>
+  ): Promise<StoreCustomerAddress | null> => {
     if (!customerClient || !isAuthenticated) {
       return null;
     }
@@ -920,7 +925,7 @@ export const PanaCustomerProvider: React.FC<PanaCustomerProviderProps> = ({
         primary: addressData.primary ?? false,
       });
       await refreshAddresses();
-      return address as Address;
+      return address as StoreCustomerAddress;
     } catch (error) {
       if (debug) {
         console.error("Error creating address:", error);
@@ -938,8 +943,8 @@ export const PanaCustomerProvider: React.FC<PanaCustomerProviderProps> = ({
 
   const updateAddress = async (
     addressId: number,
-    addressData: Partial<Address>
-  ): Promise<Address | null> => {
+    addressData: Partial<StoreCustomerAddress>
+  ): Promise<StoreCustomerAddress | null> => {
     if (!customerClient || !isAuthenticated) {
       return null;
     }
@@ -953,7 +958,7 @@ export const PanaCustomerProvider: React.FC<PanaCustomerProviderProps> = ({
         addressData
       );
       await refreshAddresses();
-      return address as Address;
+      return address as StoreCustomerAddress;
     } catch (error) {
       if (debug) {
         console.error("Error updating address:", error);
@@ -1023,7 +1028,7 @@ export const PanaCustomerProvider: React.FC<PanaCustomerProviderProps> = ({
     }
   };
 
-  // Order Funktionen
+  // StoreCustomerOrder Funktionen
   const refreshOrders = async (): Promise<void> => {
     if (!customerClient || !isAuthenticated) {
       return;
@@ -1039,7 +1044,7 @@ export const PanaCustomerProvider: React.FC<PanaCustomerProviderProps> = ({
       });
 
       if (response && response.data) {
-        setOrders(response.data as Order[]);
+        setOrders(response.data as StoreCustomerOrder[]);
       } else {
         setOrders([]);
       }
@@ -1057,7 +1062,9 @@ export const PanaCustomerProvider: React.FC<PanaCustomerProviderProps> = ({
     }
   };
 
-  const getOrder = async (orderId: number): Promise<Order | null> => {
+  const getOrder = async (
+    orderId: number
+  ): Promise<StoreCustomerOrder | null> => {
     if (!customerClient || !isAuthenticated) {
       return null;
     }
@@ -1067,7 +1074,7 @@ export const PanaCustomerProvider: React.FC<PanaCustomerProviderProps> = ({
 
     try {
       const order = await customerClient.getOrder(orderId);
-      return order as Order;
+      return order as StoreCustomerOrder;
     } catch (error) {
       if (debug) {
         console.error(`Error getting order ${orderId}:`, error);
@@ -1086,7 +1093,7 @@ export const PanaCustomerProvider: React.FC<PanaCustomerProviderProps> = ({
   /*  const createOrder = async (orderData: {
     comment?: string;
     addressId: number;
-  }): Promise<Order | null> => {
+  }): Promise<StoreCustomerOrder | null> => {
     if (!customerClient || !isAuthenticated) {
       return null;
     }
@@ -1098,7 +1105,7 @@ export const PanaCustomerProvider: React.FC<PanaCustomerProviderProps> = ({
       const order = await customerClient.createOrder(orderData);
       await refreshOrders();
       if (!order) return null;
-      return order as Order;
+      return order as StoreCustomerOrder;
     } catch (error) {
       if (debug) {
         console.error('Error creating order:', error);
