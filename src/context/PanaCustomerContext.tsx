@@ -4,7 +4,6 @@ import {
   PanaCustomerClient,
   RegisterStoreCustomerDtoCustomerType,
 } from "@pana-commerce/pana-sdk";
-import { secureStorage, initSecurity } from "../utils/security";
 import type {
   components,
   LoginResExternalDto,
@@ -79,7 +78,6 @@ export interface PanaCustomerContextType {
   ordersError: string | null;
   refreshOrders: () => Promise<void>;
   getOrder: (orderId: number) => Promise<StoreCustomerOrder | null>;
-  // createOrder: (orderData: { comment?: string; addressId: number }) => Promise<StoreCustomerOrder | null>;
 
   // Authentication
   login: (email: string, password: string) => Promise<boolean>;
@@ -145,7 +143,6 @@ const defaultContextValue: PanaCustomerContextType = {
   ordersError: null,
   refreshOrders: async () => {},
   getOrder: async () => null,
-  // createOrder: async () => null,
 
   login: async () => false,
   logout: async () => {},
@@ -205,53 +202,33 @@ export const PanaCustomerProvider: React.FC<PanaCustomerProviderProps> = ({
   const [ordersLoading, setOrdersLoading] = useState<boolean>(true);
   const [ordersError, setOrdersError] = useState<string | null>(null);
 
-  // Initialisierung der Security
+  // Initialisierung - Prüfe auf gespeicherten Auth-Token
   useEffect(() => {
-    const setupSecurity = async () => {
-      try {
-        // Verwende den ConfigContext für shopId
-        const configElement = document.querySelector("[data-pana-shopid]");
-        const shopId = configElement?.getAttribute("data-pana-shopid");
-
-        if (shopId) {
-          // Initialisiere Security mit shopId
-          initSecurity(shopId);
-          if (debug) {
-            console.log(
-              "PanaCustomerProvider: Security wurde initialisiert mit shopId:",
-              shopId
-            );
-          }
-
-          // Nach der Security-Initialisierung können wir den gespeicherten Token prüfen
-          checkAuthStatus();
-        } else {
-          console.error(
-            "PanaCustomerProvider: Keine Shop-ID gefunden. Security kann nicht initialisiert werden."
-          );
-          setLoading(false);
-        }
-      } catch (err) {
-        console.error(
-          "PanaCustomerProvider: Fehler bei der Security-Initialisierung:",
-          err
-        );
-        setLoading(false);
-      }
-    };
-
-    setupSecurity();
+    checkAuthStatus();
   }, [debug]);
 
   // Prüfen auf gespeicherten Auth-Token
   const checkAuthStatus = async () => {
     try {
-      const storedToken = await secureStorage.getItem("pana_auth_token");
+      const storedToken = localStorage.getItem("pana_auth_token");
       if (storedToken) {
         setAuthToken(storedToken);
         const client = new PanaCustomerClient(storedToken);
         setCustomerClient(client);
-        setIsAuthenticated(true);
+
+        // Versuche, Kundendaten zu laden um Token zu validieren
+        try {
+          const userData = await client.getMe();
+          setCustomer(userData as StoreCustomer);
+          setIsAuthenticated(true);
+        } catch (error) {
+          // Token ist ungültig, entferne ihn
+          localStorage.removeItem("pana_auth_token");
+          setAuthToken(null);
+          setCustomerClient(null);
+          setIsAuthenticated(false);
+          setCustomer(null);
+        }
       }
     } catch (error) {
       if (debug) {
@@ -261,8 +238,6 @@ export const PanaCustomerProvider: React.FC<PanaCustomerProviderProps> = ({
       setLoading(false);
     }
   };
-
-  // Diese useEffect wurde entfernt, da die Funktionalität in die checkAuthStatus-Funktion verschoben wurde
 
   // Wenn der Client verfügbar ist, lade Kundendaten
   useEffect(() => {
@@ -285,21 +260,25 @@ export const PanaCustomerProvider: React.FC<PanaCustomerProviderProps> = ({
         throw new Error("Store API Token fehlt");
       }
 
-      // Verwende den PanaStoreClient für Login
       const { PanaStoreClient } = await import("@pana-commerce/pana-sdk");
       const storeClient = new PanaStoreClient(storeApiToken);
 
-      const loginResult = await storeClient.login({
+      // Die API gibt eine SuccessResponse zurück, die LoginResExternalDto als data enthält
+      const loginResponse = await storeClient.login({
         email,
         password,
       });
 
+      // Extrahiere LoginResExternalDto aus der SuccessResponse
+      const loginResult: LoginResExternalDto =
+        loginResponse as LoginResExternalDto;
+
       if (!loginResult || !loginResult.accessToken) {
-        throw new Error("Login fehlgeschlagen");
+        throw new Error("Login fehlgeschlagen - Kein Access Token erhalten");
       }
 
       // Token speichern
-      await secureStorage.setItem("pana_auth_token", loginResult.accessToken);
+      localStorage.setItem("pana_auth_token", loginResult.accessToken);
 
       // Customer Client initialisieren
       const client = new PanaCustomerClient(loginResult.accessToken);
@@ -307,9 +286,18 @@ export const PanaCustomerProvider: React.FC<PanaCustomerProviderProps> = ({
       setAuthToken(loginResult.accessToken);
       setIsAuthenticated(true);
 
-      // Kundendaten laden
-      const userData = await client.getMe();
-      setCustomer(userData as StoreCustomer);
+      // Kundendaten aus der Login-Antwort setzen
+      if (loginResult.customer) {
+        setCustomer(loginResult.customer);
+      } else {
+        // Falls Customer nicht in der Antwort enthalten ist, lade ihn separat
+        try {
+          const userData = await client.getMe();
+          setCustomer(userData as StoreCustomer);
+        } catch (error) {
+          console.warn("Konnte Kundendaten nicht laden:", error);
+        }
+      }
 
       setLoading(false);
       return true;
@@ -317,7 +305,25 @@ export const PanaCustomerProvider: React.FC<PanaCustomerProviderProps> = ({
       if (debug) {
         console.error("Login error:", error);
       }
-      setError(error instanceof Error ? error.message : "Fehler beim Login");
+
+      let errorMessage = "Fehler beim Login";
+      if (error instanceof Error) {
+        // Spezifische Fehlermeldungen für verschiedene Fehlertypen
+        if (
+          error.message.includes("401") ||
+          error.message.includes("unauthorized")
+        ) {
+          errorMessage = "Ungültige E-Mail oder Passwort";
+        } else if (error.message.includes("400")) {
+          errorMessage = "Ungültige Eingabedaten";
+        } else if (error.message.includes("500")) {
+          errorMessage = "Serverfehler. Bitte versuchen Sie es später erneut.";
+        } else {
+          errorMessage = error.message;
+        }
+      }
+
+      setError(errorMessage);
       setLoading(false);
       return false;
     }
@@ -325,7 +331,7 @@ export const PanaCustomerProvider: React.FC<PanaCustomerProviderProps> = ({
 
   const logout = async (): Promise<void> => {
     try {
-      await secureStorage.removeItem("pana_auth_token");
+      localStorage.removeItem("pana_auth_token");
       setCustomerClient(null);
       setAuthToken(null);
       setIsAuthenticated(false);
@@ -334,6 +340,7 @@ export const PanaCustomerProvider: React.FC<PanaCustomerProviderProps> = ({
       setWishlists(null);
       setAddresses(null);
       setOrders(null);
+      setError(null);
     } catch (error) {
       if (debug) {
         console.error("Logout error:", error);
@@ -372,14 +379,30 @@ export const PanaCustomerProvider: React.FC<PanaCustomerProviderProps> = ({
         throw new Error("Registrierung fehlgeschlagen");
       }
 
+      // Nach erfolgreicher Registrierung automatisch einloggen
       return await login(email, password);
     } catch (error) {
       if (debug) {
         console.error("Register error:", error);
       }
-      setError(
-        error instanceof Error ? error.message : "Fehler bei der Registrierung"
-      );
+
+      let errorMessage = "Fehler bei der Registrierung";
+      if (error instanceof Error) {
+        if (
+          error.message.includes("409") ||
+          error.message.includes("conflict")
+        ) {
+          errorMessage = "E-Mail-Adresse bereits registriert";
+        } else if (error.message.includes("400")) {
+          errorMessage = "Ungültige Eingabedaten";
+        } else if (error.message.includes("500")) {
+          errorMessage = "Serverfehler. Bitte versuchen Sie es später erneut.";
+        } else {
+          errorMessage = error.message;
+        }
+      }
+
+      setError(errorMessage);
       setLoading(false);
       return false;
     }
@@ -413,34 +436,6 @@ export const PanaCustomerProvider: React.FC<PanaCustomerProviderProps> = ({
       setLoading(false);
     }
   };
-
-  /*  const updateCustomer = async (data: Partial<Customer>): Promise<Customer | null> => {
-    if (!customerClient || !isAuthenticated) {
-      return null;
-    }
-
-    setLoading(true);
-    setError(null);
-
-    try {
-      const updatedCustomer = await customerClient.updateMe(data);
-      if (updatedCustomer) {
-        setCustomer(updatedCustomer as Customer);
-        return updatedCustomer as Customer;
-      }
-      return null;
-    } catch (error) {
-      if (debug) {
-        console.error('Error updating customer:', error);
-      }
-      setError(
-        error instanceof Error ? error.message : 'Fehler beim Aktualisieren der Kundendaten'
-      );
-      return null;
-    } finally {
-      setLoading(false);
-    }
-  }; */
 
   const changePassword = async (
     oldPassword: string,
@@ -1090,35 +1085,6 @@ export const PanaCustomerProvider: React.FC<PanaCustomerProviderProps> = ({
     }
   };
 
-  /*  const createOrder = async (orderData: {
-    comment?: string;
-    addressId: number;
-  }): Promise<StoreCustomerOrder | null> => {
-    if (!customerClient || !isAuthenticated) {
-      return null;
-    }
-
-    setOrdersLoading(true);
-    setOrdersError(null);
-
-    try {
-      const order = await customerClient.createOrder(orderData);
-      await refreshOrders();
-      if (!order) return null;
-      return order as StoreCustomerOrder;
-    } catch (error) {
-      if (debug) {
-        console.error('Error creating order:', error);
-      }
-      setOrdersError(
-        error instanceof Error ? error.message : 'Fehler beim Erstellen der Bestellung'
-      );
-      return null;
-    } finally {
-      setOrdersLoading(false);
-    }
-  }; */
-
   const contextValue: PanaCustomerContextType = {
     customerClient,
     isAuthenticated,
@@ -1162,13 +1128,11 @@ export const PanaCustomerProvider: React.FC<PanaCustomerProviderProps> = ({
     ordersError,
     refreshOrders,
     getOrder,
-    // createOrder,
 
     login,
     logout,
     register,
     refreshCustomer,
-    // updateCustomer,
     changePassword,
     changeEmail,
   };

@@ -1,8 +1,8 @@
-import React, { useState, useEffect, useContext } from "react";
+import React, { useState, useEffect } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import { usePanaProduct } from "../../hooks/usePanaProduct";
-import { CartContext } from "../../context/CartContext";
-import { AuthContext } from "../../context/AuthContext";
+import { usePanaCart } from "../../hooks/usePanaCart";
+import { usePanaAuth } from "../../hooks/usePanaAuth";
 import styles from "./ProductDetails.module.scss";
 
 const ProductDetails: React.FC = () => {
@@ -14,8 +14,8 @@ const ProductDetails: React.FC = () => {
     autoLoad: true,
   });
 
-  const { addToCart, loading: cartLoading } = useContext(CartContext);
-  const { isAuthenticated } = useContext(AuthContext);
+  const { addToCart, loading: cartLoading } = usePanaCart();
+  const { isAuthenticated } = usePanaAuth();
 
   const [selectedVariantIndex, setSelectedVariantIndex] = useState<number>(0);
   const [currentImageIndex, setCurrentImageIndex] = useState<number>(0);
@@ -93,14 +93,28 @@ const ProductDetails: React.FC = () => {
       const success = await addToCart(variant.id, quantity);
       if (success) {
         console.log(`${quantity}x ${variant.name} zum Warenkorb hinzugefügt`);
-        // Optional: Erfolgs-Feedback anzeigen
-        // Könnte hier eine Toast-Nachricht oder ähnliches anzeigen
+
+        // Erfolgsmeldung anzeigen (optional - könnte durch Toast-Notification ersetzt werden)
+        // Hier könnten Sie eine Benachrichtigung anzeigen oder den Benutzer zum Warenkorb weiterleiten
+
+        // Optional: Benutzer fragen ob er zum Warenkorb möchte
+        const goToCart = window.confirm(
+          `${variant.name} wurde erfolgreich hinzugefügt! Möchten Sie zum Warenkorb?`
+        );
+        if (goToCart) {
+          navigate("/cart");
+        }
       } else {
         console.error("Fehler beim Hinzufügen zum Warenkorb");
-        // Optional: Fehler-Feedback anzeigen
+        alert(
+          "Fehler beim Hinzufügen zum Warenkorb. Bitte versuchen Sie es erneut."
+        );
       }
     } catch (error) {
       console.error("Fehler beim Hinzufügen zum Warenkorb:", error);
+      alert(
+        "Ein unerwarteter Fehler ist aufgetreten. Bitte versuchen Sie es erneut."
+      );
     } finally {
       setIsAddingToCart(false);
     }

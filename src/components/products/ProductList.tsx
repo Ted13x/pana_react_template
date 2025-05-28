@@ -2,8 +2,8 @@
 import React, { useState, useEffect, useContext } from "react";
 import { useNavigate } from "react-router-dom";
 import { usePanaProducts } from "../../hooks/usePanaProducts";
-import { CartContext } from "../../context/CartContext";
-import { AuthContext } from "../../context/AuthContext";
+import { usePanaCart } from "../../hooks/usePanaCart";
+import { usePanaAuth } from "../../hooks/usePanaAuth";
 import styles from "./ProductList.module.scss";
 
 const ProductList = () => {
@@ -16,8 +16,8 @@ const ProductList = () => {
     searchTerm,
     setSearchTerm,
   } = usePanaProducts();
-  const { addToCart, loading: cartLoading } = useContext(CartContext);
-  const { isAuthenticated } = useContext(AuthContext);
+  const { addToCart, loading: cartLoading } = usePanaCart();
+  const { isAuthenticated } = usePanaAuth();
   const [isGridView, setIsGridView] = useState(true);
   const [addingToCart, setAddingToCart] = useState<number | null>(null);
 
@@ -101,15 +101,22 @@ const ProductList = () => {
         console.log(
           `Variante ${variantId} erfolgreich zum Warenkorb hinzugefügt`
         );
-        // Optional: Erfolgs-Feedback anzeigen
+
+        // Erfolgsmeldung anzeigen (optional - könnte durch Toast-Notification ersetzt werden)
+        // Hier könnten Sie eine Benachrichtigung anzeigen
       } else {
         console.error(
           `Fehler beim Hinzufügen der Variante ${variantId} zum Warenkorb`
         );
-        // Optional: Fehler-Feedback anzeigen
+        alert(
+          "Fehler beim Hinzufügen zum Warenkorb. Bitte versuchen Sie es erneut."
+        );
       }
     } catch (error) {
       console.error("Fehler beim Hinzufügen zum Warenkorb:", error);
+      alert(
+        "Ein unerwarteter Fehler ist aufgetreten. Bitte versuchen Sie es erneut."
+      );
     } finally {
       setAddingToCart(null);
     }

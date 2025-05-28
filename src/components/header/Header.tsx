@@ -9,49 +9,43 @@ import styles from "./Header.module.scss";
 const Header = () => {
   const navigate = useNavigate();
   const { shopId } = useConfig();
-  const { isAuthenticated, customer, login, logout, register } = usePanaAuth();
-  const { cart, refreshCart } = usePanaCart();
+  const { isAuthenticated, customer, login, logout, register, loading, error } =
+    usePanaAuth();
+  const { cart, cartItems, cartTotal, itemCount, refreshCart } = usePanaCart();
   const { wishlists, refreshWishlists } = usePanaWishlist();
 
-  // Dropdown-Zustände
   const [showFavsDropdown, setShowFavsDropdown] = useState(false);
   const [showCartDropdown, setShowCartDropdown] = useState(false);
   const [showLoginDropdown, setShowLoginDropdown] = useState(false);
 
-  // Formular-Zustände
   const [showRegistrationForm, setShowRegistrationForm] = useState(false);
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [firstName, setFirstName] = useState("");
   const [lastName, setLastName] = useState("");
-  const [loginError, setLoginError] = useState("");
-  const [registrationError, setRegistrationError] = useState("");
 
-  // Refs für Dropdown-Elemente (zur Erkennung von Klicks außerhalb)
   const favsDropdownRef = useRef<HTMLDivElement>(null);
   const cartDropdownRef = useRef<HTMLDivElement>(null);
   const loginDropdownRef = useRef<HTMLDivElement>(null);
 
-  // Berechnen von Anzahlen
-  const cartItemCount = cart?.shoppingCartItems?.length || 0;
+  const cartItemCount = itemCount;
   const wishlistItemCount =
     wishlists?.reduce((total, wishlist) => {
       return total + (wishlist.variants?.length || 0);
     }, 0) || 0;
 
-  // Benutzername für Anzeige
   const displayName = customer
-    ? "firstName" in customer
+    ? customer.firstName && customer.lastName
+      ? `${customer.firstName} ${customer.lastName}`
+      : customer.firstName
       ? customer.firstName
-      : "email" in customer
+      : customer.email
       ? customer.email.split("@")[0]
-      : ""
+      : "Benutzer"
     : "";
 
-  // Effekt zum Schließen der Dropdowns bei Klick außerhalb
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
-      // Prüfen, ob der Klick außerhalb der Dropdowns war
       if (
         showFavsDropdown &&
         favsDropdownRef.current &&
@@ -77,14 +71,12 @@ const Header = () => {
       }
     };
 
-    // Event-Listener hinzufügen/entfernen
     document.addEventListener("mousedown", handleClickOutside);
     return () => {
       document.removeEventListener("mousedown", handleClickOutside);
     };
   }, [showFavsDropdown, showCartDropdown, showLoginDropdown]);
 
-  // Aktualisieren des Carts und der Wunschliste nach Login
   useEffect(() => {
     if (isAuthenticated) {
       refreshCart();
@@ -92,93 +84,128 @@ const Header = () => {
     }
   }, [isAuthenticated]);
 
-  // Handler für Login
+  useEffect(() => {
+    console.log("Header Debug - States:", {
+      isAuthenticated,
+      customer: customer?.firstName || customer?.email,
+      showLoginDropdown,
+      showCartDropdown,
+      showFavsDropdown,
+      loading,
+      error,
+    });
+  }, [
+    isAuthenticated,
+    customer,
+    showLoginDropdown,
+    showCartDropdown,
+    showFavsDropdown,
+    loading,
+    error,
+  ]);
+
+  useEffect(() => {
+    if (isAuthenticated) {
+      if (showLoginDropdown) {
+        setShowLoginDropdown(false);
+      }
+      resetForm();
+    }
+  }, [isAuthenticated]);
+
+  const resetForm = () => {
+    setEmail("");
+    setPassword("");
+    setFirstName("");
+    setLastName("");
+    setShowRegistrationForm(false);
+  };
+
+  const formatPrice = (price: number, currency: string = "EUR") => {
+    return price.toLocaleString("de-DE", {
+      style: "currency",
+      currency: currency,
+    });
+  };
+
+  const getMainCurrency = () => {
+    if (cartItems.length > 0) {
+      const firstItemWithPrice = cartItems.find(
+        (item) => item.variant?.prices && item.variant.prices.length > 0
+      );
+      return firstItemWithPrice?.variant?.prices?.[0]?.currency || "EUR";
+    }
+    return "EUR";
+  };
+
+  const handleLoginDropdownToggle = () => {
+    console.log("Toggle login dropdown, current state:", showLoginDropdown);
+    setShowLoginDropdown((prev) => {
+      console.log("Setting showLoginDropdown from", prev, "to", !prev);
+      return !prev;
+    });
+  };
+
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
-    setLoginError("");
+
+    if (!email || !password) {
+      return;
+    }
 
     try {
       const success = await login(email, password);
       if (success) {
-        setShowLoginDropdown(false);
-        setEmail("");
-        setPassword("");
+        console.log("Login erfolgreich");
       }
-      /* else {
-        setLoginError(
-          "Anmeldung fehlgeschlagen. Bitte überprüfen Sie Ihre Eingaben."
-        );
-      } */
     } catch (error) {
-      setLoginError(
-        "Ein Fehler ist aufgetreten. Bitte versuchen Sie es später erneut."
-      );
+      console.error("Login Fehler:", error);
     }
   };
 
-  // Handler für Registrierung
   const handleRegistration = async (e: React.FormEvent) => {
     e.preventDefault();
-    setRegistrationError("");
 
     if (!email || !password || !firstName || !lastName) {
-      setRegistrationError("Bitte füllen Sie alle Felder aus.");
       return;
     }
 
     try {
       const success = await register(email, password, firstName, lastName, []);
       if (success) {
-        setShowLoginDropdown(false);
-        setShowRegistrationForm(false);
-        setEmail("");
-        setPassword("");
-        setFirstName("");
-        setLastName("");
-      } else {
-        setRegistrationError(
-          "Registrierung fehlgeschlagen. Bitte versuchen Sie es später erneut."
-        );
+        console.log("Registrierung erfolgreich");
       }
     } catch (error) {
-      setRegistrationError(
-        "Ein Fehler ist aufgetreten. Bitte versuchen Sie es später erneut."
-      );
+      console.error("Registrierung Fehler:", error);
     }
   };
 
-  // Handler für Logout
   const handleLogout = async () => {
     await logout();
     setShowLoginDropdown(false);
   };
 
-  // Navigation zum Warenkorb
   const navigateToCart = () => {
     setShowCartDropdown(false);
     navigate("/cart");
   };
 
-  // Navigation zur Wunschliste
   const navigateToWishlist = () => {
     setShowFavsDropdown(false);
     navigate("/favorites");
   };
 
-  // Navigation zum Profil
   const navigateToProfile = () => {
     setShowLoginDropdown(false);
     navigate("/profile");
   };
 
-  // Navigation zur Startseite (Logo-Klick)
   const navigateToHome = () => {
     navigate("/");
   };
 
   return (
     <header className={styles.header} data-pana-shopid={shopId}>
-      {/* Logo-Bereich */}
       <div className={styles.logoContainer} onClick={navigateToHome}>
         <svg
           className={styles.logo}
@@ -191,9 +218,7 @@ const Header = () => {
         </svg>
       </div>
 
-      {/* Aktions-Bereich */}
       <div className={styles.actions}>
-        {/* Favoriten-Icon und Dropdown */}
         <div className={styles.actionItem} ref={favsDropdownRef}>
           <button
             className={styles.iconButton}
@@ -247,7 +272,6 @@ const Header = () => {
           )}
         </div>
 
-        {/* Warenkorb-Icon und Dropdown */}
         <div className={styles.actionItem} ref={cartDropdownRef}>
           <button
             className={styles.iconButton}
@@ -281,54 +305,47 @@ const Header = () => {
                 {cartItemCount > 0 ? (
                   <>
                     <div className={styles.cartItems}>
-                      {cart?.shoppingCartItems?.slice(0, 3).map((item) => (
+                      {cartItems.slice(0, 3).map((item) => (
                         <div key={item.id} className={styles.cartItem}>
                           {item.variant?.medias &&
                             item.variant.medias.length > 0 && (
                               <div className={styles.cartItemImage}>
                                 <img
                                   src={item.variant.medias[0].url}
-                                  alt={item.variant.name}
+                                  alt={item.variant.name || "Produkt"}
                                 />
                               </div>
                             )}
                           <div className={styles.cartItemInfo}>
                             <p className={styles.cartItemName}>
-                              {item.variant?.name}
+                              {item.variant?.name || "Unbekanntes Produkt"}
                             </p>
                             <p className={styles.cartItemPrice}>
-                              {item.amount} x{" "}
+                              {item.amount}x{" "}
                               {item.variant?.prices &&
                               item.variant.prices.length > 0
-                                ? parseFloat(
-                                    item.variant.prices[0].value.toString()
-                                  ).toLocaleString("de-DE", {
-                                    style: "currency",
-                                    currency: item.variant.prices[0].currency,
-                                  })
-                                : ""}
+                                ? formatPrice(
+                                    parseFloat(
+                                      item.variant.prices[0].value.toString()
+                                    ),
+                                    item.variant.prices[0].currency
+                                  )
+                                : "Preis nicht verfügbar"}
                             </p>
                           </div>
                         </div>
                       ))}
                     </div>
 
-                    {cart?.shoppingCartItems &&
-                      cart.shoppingCartItems.length > 3 && (
-                        <p className={styles.moreItems}>
-                          +{cart.shoppingCartItems.length - 3} weitere Artikel
-                        </p>
-                      )}
+                    {cartItems.length > 3 && (
+                      <p className={styles.moreItems}>
+                        +{cartItems.length - 3} weitere Artikel
+                      </p>
+                    )}
 
                     <div className={styles.cartTotal}>
                       <span>Gesamt:</span>
-                      <span>
-                        {/*  {cart?.total ? 
-                          parseFloat(cart.total.toString()).toLocaleString("de-DE", {
-                            style: "currency",
-                            currency: "EUR", // Annahme: Euro als Standardwährung
-                          }) : ""} */}
-                      </span>
+                      <span>{formatPrice(cartTotal, getMainCurrency())}</span>
                     </div>
 
                     <button
@@ -350,8 +367,12 @@ const Header = () => {
         <div className={styles.actionItem} ref={loginDropdownRef}>
           <button
             className={styles.iconButton}
-            onClick={() => setShowLoginDropdown(!showLoginDropdown)}
+            onClick={() => {
+              console.log("Login button clicked!");
+              setShowLoginDropdown(!showLoginDropdown);
+            }}
             aria-label={isAuthenticated ? "Konto" : "Login"}
+            type="button"
           >
             <svg
               xmlns="http://www.w3.org/2000/svg"
@@ -371,13 +392,12 @@ const Header = () => {
             <div className={styles.dropdown}>
               <div className={styles.dropdownHeader}>
                 <h3>
-                  {isAuthenticated ? `Hallo, ${displayName}` : "Anmelden"}
+                  {isAuthenticated ? `Hallo, ${displayName}!` : "Anmelden"}
                 </h3>
               </div>
 
               <div className={styles.dropdownContent}>
                 {isAuthenticated ? (
-                  // Angemeldet: Zeige Benutzermenü
                   <>
                     <button
                       className={styles.accountButton}
@@ -399,7 +419,6 @@ const Header = () => {
                     </button>
                   </>
                 ) : (
-                  // Nicht angemeldet: Zeige Login/Registrierung
                   <>
                     <div className={styles.tabs}>
                       <button
@@ -421,10 +440,9 @@ const Header = () => {
                     </div>
 
                     {!showRegistrationForm ? (
-                      // Login-Formular
                       <form className={styles.authForm} onSubmit={handleLogin}>
-                        {loginError && (
-                          <p className={styles.errorMessage}>{loginError}</p>
+                        {error && (
+                          <p className={styles.errorMessage}>{error}</p>
                         )}
 
                         <div className={styles.formGroup}>
@@ -449,20 +467,21 @@ const Header = () => {
                           />
                         </div>
 
-                        <button type="submit" className={styles.submitButton}>
-                          Anmelden
+                        <button
+                          type="submit"
+                          className={styles.submitButton}
+                          disabled={loading}
+                        >
+                          {loading ? "Anmelden..." : "Anmelden"}
                         </button>
                       </form>
                     ) : (
-                      // Registrierungs-Formular
                       <form
                         className={styles.authForm}
                         onSubmit={handleRegistration}
                       >
-                        {registrationError && (
-                          <p className={styles.errorMessage}>
-                            {registrationError}
-                          </p>
+                        {error && (
+                          <p className={styles.errorMessage}>{error}</p>
                         )}
 
                         <div className={styles.formGroup}>
@@ -511,8 +530,12 @@ const Header = () => {
                           />
                         </div>
 
-                        <button type="submit" className={styles.submitButton}>
-                          Konto erstellen
+                        <button
+                          type="submit"
+                          className={styles.submitButton}
+                          disabled={loading}
+                        >
+                          {loading ? "Registrieren..." : "Konto erstellen"}
                         </button>
                       </form>
                     )}
