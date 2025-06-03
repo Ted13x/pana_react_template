@@ -15,10 +15,9 @@ $spacing-unit: 16px;
 
 // Container für die Produktliste
 .productListContainer {
-  width: 100%;
-  max-width: 1280px;
-  margin: 0 auto;
+  max-width: 100vw;
   padding: $spacing-unit;
+  margin-top: 30px;
 }
 
 // Header-Bereich mit Titel und Steuerungen

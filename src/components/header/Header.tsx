@@ -4,6 +4,7 @@ import { useConfig } from "../../hooks/useConfig";
 import { usePanaAuth } from "../../hooks/usePanaAuth";
 import { usePanaCart } from "../../hooks/usePanaCart";
 import { usePanaWishlist } from "../../hooks/usePanaWishlist";
+import CartSidebar from "../cart/CartSidebar";
 import styles from "./Header.module.scss";
 
 const Header = () => {
@@ -11,11 +12,11 @@ const Header = () => {
   const { shopId } = useConfig();
   const { isAuthenticated, customer, login, logout, register, loading, error } =
     usePanaAuth();
-  const { cart, cartItems, cartTotal, itemCount, refreshCart } = usePanaCart();
+  const { cartItems, cartTotal, itemCount, refreshCart } = usePanaCart();
   const { wishlists, refreshWishlists } = usePanaWishlist();
 
   const [showFavsDropdown, setShowFavsDropdown] = useState(false);
-  const [showCartDropdown, setShowCartDropdown] = useState(false);
+  const [showCartSidebar, setShowCartSidebar] = useState(false); // Geändert von showCartDropdown
   const [showLoginDropdown, setShowLoginDropdown] = useState(false);
 
   const [showRegistrationForm, setShowRegistrationForm] = useState(false);
@@ -25,7 +26,6 @@ const Header = () => {
   const [lastName, setLastName] = useState("");
 
   const favsDropdownRef = useRef<HTMLDivElement>(null);
-  const cartDropdownRef = useRef<HTMLDivElement>(null);
   const loginDropdownRef = useRef<HTMLDivElement>(null);
 
   const cartItemCount = itemCount;
@@ -55,14 +55,6 @@ const Header = () => {
       }
 
       if (
-        showCartDropdown &&
-        cartDropdownRef.current &&
-        !cartDropdownRef.current.contains(event.target as Node)
-      ) {
-        setShowCartDropdown(false);
-      }
-
-      if (
         showLoginDropdown &&
         loginDropdownRef.current &&
         !loginDropdownRef.current.contains(event.target as Node)
@@ -75,7 +67,7 @@ const Header = () => {
     return () => {
       document.removeEventListener("mousedown", handleClickOutside);
     };
-  }, [showFavsDropdown, showCartDropdown, showLoginDropdown]);
+  }, [showFavsDropdown, showLoginDropdown]);
 
   useEffect(() => {
     if (isAuthenticated) {
@@ -89,7 +81,7 @@ const Header = () => {
       isAuthenticated,
       customer: customer?.firstName || customer?.email,
       showLoginDropdown,
-      showCartDropdown,
+      showCartSidebar,
       showFavsDropdown,
       loading,
       error,
@@ -98,7 +90,7 @@ const Header = () => {
     isAuthenticated,
     customer,
     showLoginDropdown,
-    showCartDropdown,
+    showCartSidebar,
     showFavsDropdown,
     loading,
     error,
@@ -185,11 +177,6 @@ const Header = () => {
     setShowLoginDropdown(false);
   };
 
-  const navigateToCart = () => {
-    setShowCartDropdown(false);
-    navigate("/cart");
-  };
-
   const navigateToWishlist = () => {
     setShowFavsDropdown(false);
     navigate("/favorites");
@@ -204,349 +191,301 @@ const Header = () => {
     navigate("/");
   };
 
+  // Neue Handler für Cart Sidebar
+  const handleCartToggle = () => {
+    setShowCartSidebar(!showCartSidebar);
+  };
+
+  const handleCartClose = () => {
+    setShowCartSidebar(false);
+  };
+
   return (
-    <header className={styles.header} data-pana-shopid={shopId}>
-      <div className={styles.logoContainer} onClick={navigateToHome}>
-        <svg
-          className={styles.logo}
-          viewBox="0 0 100 40"
-          xmlns="http://www.w3.org/2000/svg"
-        >
-          <text x="5" y="30" className={styles.logoText}>
-            PANA
-          </text>
-        </svg>
-      </div>
-
-      <div className={styles.actions}>
-        <div className={styles.actionItem} ref={favsDropdownRef}>
-          <button
-            className={styles.iconButton}
-            onClick={() => setShowFavsDropdown(!showFavsDropdown)}
-            aria-label="Wunschliste"
+    <>
+      <header className={styles.header} data-pana-shopid={shopId}>
+        <div className={styles.logoContainer} onClick={navigateToHome}>
+          <svg
+            className={styles.logo}
+            viewBox="0 0 100 40"
+            xmlns="http://www.w3.org/2000/svg"
           >
-            <svg
-              xmlns="http://www.w3.org/2000/svg"
-              viewBox="0 0 24 24"
-              fill="none"
-              stroke="currentColor"
-              strokeWidth="2"
-              strokeLinecap="round"
-              strokeLinejoin="round"
-            >
-              <path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78L12 21.23l8.84-8.84a5.5 5.5 0 0 0 0-7.78z"></path>
-            </svg>
-            {wishlistItemCount > 0 && (
-              <span className={styles.badge}>{wishlistItemCount}</span>
-            )}
-          </button>
-
-          {showFavsDropdown && (
-            <div className={styles.dropdown}>
-              <div className={styles.dropdownHeader}>
-                <h3>Meine Wunschliste</h3>
-              </div>
-              <div className={styles.dropdownContent}>
-                {wishlistItemCount > 0 ? (
-                  <>
-                    {wishlists?.map((wishlist) => (
-                      <div key={wishlist.id} className={styles.wishlistItem}>
-                        <h4>{wishlist.name}</h4>
-                        <p>{wishlist.variants?.length || 0} Artikel</p>
-                      </div>
-                    ))}
-                    <button
-                      className={styles.dropdownButton}
-                      onClick={navigateToWishlist}
-                    >
-                      Zur Wunschliste
-                    </button>
-                  </>
-                ) : (
-                  <p className={styles.emptyMessage}>
-                    Ihre Wunschliste ist leer.
-                  </p>
-                )}
-              </div>
-            </div>
-          )}
+            <text x="5" y="30" className={styles.logoText}>
+              PANA
+            </text>
+          </svg>
         </div>
 
-        <div className={styles.actionItem} ref={cartDropdownRef}>
-          <button
-            className={styles.iconButton}
-            onClick={() => setShowCartDropdown(!showCartDropdown)}
-            aria-label="Warenkorb"
-          >
-            <svg
-              xmlns="http://www.w3.org/2000/svg"
-              viewBox="0 0 24 24"
-              fill="none"
-              stroke="currentColor"
-              strokeWidth="2"
-              strokeLinecap="round"
-              strokeLinejoin="round"
+        <div className={styles.actions}>
+          <div className={styles.actionItem} ref={favsDropdownRef}>
+            <button
+              className={styles.iconButton}
+              onClick={() => setShowFavsDropdown(!showFavsDropdown)}
+              aria-label="Wunschliste"
             >
-              <circle cx="9" cy="21" r="1"></circle>
-              <circle cx="20" cy="21" r="1"></circle>
-              <path d="M1 1h4l2.68 13.39a2 2 0 0 0 2 1.61h9.72a2 2 0 0 0 2-1.61L23 6H6"></path>
-            </svg>
-            {cartItemCount > 0 && (
-              <span className={styles.badge}>{cartItemCount}</span>
-            )}
-          </button>
+              <svg
+                xmlns="http://www.w3.org/2000/svg"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                strokeWidth="2"
+                strokeLinecap="round"
+                strokeLinejoin="round"
+              >
+                <path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78L12 21.23l8.84-8.84a5.5 5.5 0 0 0 0-7.78z"></path>
+              </svg>
+              {wishlistItemCount > 0 && (
+                <span className={styles.badge}>{wishlistItemCount}</span>
+              )}
+            </button>
 
-          {showCartDropdown && (
-            <div className={styles.dropdown}>
-              <div className={styles.dropdownHeader}>
-                <h3>Mein Warenkorb</h3>
-              </div>
-              <div className={styles.dropdownContent}>
-                {cartItemCount > 0 ? (
-                  <>
-                    <div className={styles.cartItems}>
-                      {cartItems.slice(0, 3).map((item) => (
-                        <div key={item.id} className={styles.cartItem}>
-                          {item.variant?.medias &&
-                            item.variant.medias.length > 0 && (
-                              <div className={styles.cartItemImage}>
-                                <img
-                                  src={item.variant.medias[0].url}
-                                  alt={item.variant.name || "Produkt"}
-                                />
-                              </div>
-                            )}
-                          <div className={styles.cartItemInfo}>
-                            <p className={styles.cartItemName}>
-                              {item.variant?.name || "Unbekanntes Produkt"}
-                            </p>
-                            <p className={styles.cartItemPrice}>
-                              {item.amount}x{" "}
-                              {item.variant?.prices &&
-                              item.variant.prices.length > 0
-                                ? formatPrice(
-                                    parseFloat(
-                                      item.variant.prices[0].value.toString()
-                                    ),
-                                    item.variant.prices[0].currency
-                                  )
-                                : "Preis nicht verfügbar"}
-                            </p>
-                          </div>
+            {showFavsDropdown && (
+              <div className={styles.dropdown}>
+                <div className={styles.dropdownHeader}>
+                  <h3>Meine Wunschliste</h3>
+                </div>
+                <div className={styles.dropdownContent}>
+                  {wishlistItemCount > 0 ? (
+                    <>
+                      {wishlists?.map((wishlist) => (
+                        <div key={wishlist.id} className={styles.wishlistItem}>
+                          <h4>{wishlist.name}</h4>
+                          <p>{wishlist.variants?.length || 0} Artikel</p>
                         </div>
                       ))}
-                    </div>
-
-                    {cartItems.length > 3 && (
-                      <p className={styles.moreItems}>
-                        +{cartItems.length - 3} weitere Artikel
-                      </p>
-                    )}
-
-                    <div className={styles.cartTotal}>
-                      <span>Gesamt:</span>
-                      <span>{formatPrice(cartTotal, getMainCurrency())}</span>
-                    </div>
-
-                    <button
-                      className={styles.dropdownButton}
-                      onClick={navigateToCart}
-                    >
-                      Zum Warenkorb
-                    </button>
-                  </>
-                ) : (
-                  <p className={styles.emptyMessage}>Ihr Warenkorb ist leer.</p>
-                )}
+                      <button
+                        className={styles.dropdownButton}
+                        onClick={navigateToWishlist}
+                      >
+                        Zur Wunschliste
+                      </button>
+                    </>
+                  ) : (
+                    <p className={styles.emptyMessage}>
+                      Ihre Wunschliste ist leer.
+                    </p>
+                  )}
+                </div>
               </div>
-            </div>
-          )}
-        </div>
+            )}
+          </div>
 
-        {/* Login-Icon und Dropdown */}
-        <div className={styles.actionItem} ref={loginDropdownRef}>
-          <button
-            className={styles.iconButton}
-            onClick={() => {
-              console.log("Login button clicked!");
-              setShowLoginDropdown(!showLoginDropdown);
-            }}
-            aria-label={isAuthenticated ? "Konto" : "Login"}
-            type="button"
-          >
-            <svg
-              xmlns="http://www.w3.org/2000/svg"
-              viewBox="0 0 24 24"
-              fill="none"
-              stroke="currentColor"
-              strokeWidth="2"
-              strokeLinecap="round"
-              strokeLinejoin="round"
+          {/* Cart Button - Ohne Dropdown, öffnet Sidebar */}
+          <div className={styles.actionItem}>
+            <button
+              className={styles.iconButton}
+              onClick={handleCartToggle}
+              aria-label="Warenkorb"
             >
-              <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path>
-              <circle cx="12" cy="7" r="4"></circle>
-            </svg>
-          </button>
+              <svg
+                xmlns="http://www.w3.org/2000/svg"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                strokeWidth="2"
+                strokeLinecap="round"
+                strokeLinejoin="round"
+              >
+                <circle cx="9" cy="21" r="1"></circle>
+                <circle cx="20" cy="21" r="1"></circle>
+                <path d="M1 1h4l2.68 13.39a2 2 0 0 0 2 1.61h9.72a2 2 0 0 0 2-1.61L23 6H6"></path>
+              </svg>
+              {cartItemCount > 0 && (
+                <span className={styles.badge}>{cartItemCount}</span>
+              )}
+            </button>
+          </div>
 
-          {showLoginDropdown && (
-            <div className={styles.dropdown}>
-              <div className={styles.dropdownHeader}>
-                <h3>
-                  {isAuthenticated ? `Hallo, ${displayName}!` : "Anmelden"}
-                </h3>
-              </div>
+          {/* Login-Icon und Dropdown */}
+          <div className={styles.actionItem} ref={loginDropdownRef}>
+            <button
+              className={styles.iconButton}
+              onClick={() => {
+                console.log("Login button clicked!");
+                setShowLoginDropdown(!showLoginDropdown);
+              }}
+              aria-label={isAuthenticated ? "Konto" : "Login"}
+              type="button"
+            >
+              <svg
+                xmlns="http://www.w3.org/2000/svg"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                strokeWidth="2"
+                strokeLinecap="round"
+                strokeLinejoin="round"
+              >
+                <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path>
+                <circle cx="12" cy="7" r="4"></circle>
+              </svg>
+            </button>
 
-              <div className={styles.dropdownContent}>
-                {isAuthenticated ? (
-                  <>
-                    <button
-                      className={styles.accountButton}
-                      onClick={navigateToProfile}
-                    >
-                      Mein Konto
-                    </button>
-                    <button
-                      className={styles.accountButton}
-                      onClick={() => navigate("/orders")}
-                    >
-                      Meine Bestellungen
-                    </button>
-                    <button
-                      className={styles.logoutButton}
-                      onClick={handleLogout}
-                    >
-                      Abmelden
-                    </button>
-                  </>
-                ) : (
-                  <>
-                    <div className={styles.tabs}>
+            {showLoginDropdown && (
+              <div className={styles.dropdown}>
+                <div className={styles.dropdownHeader}>
+                  <h3>
+                    {isAuthenticated ? `Hallo, ${displayName}!` : "Anmelden"}
+                  </h3>
+                </div>
+
+                <div className={styles.dropdownContent}>
+                  {isAuthenticated ? (
+                    <>
                       <button
-                        className={`${styles.tab} ${
-                          !showRegistrationForm ? styles.activeTab : ""
-                        }`}
-                        onClick={() => setShowRegistrationForm(false)}
+                        className={styles.accountButton}
+                        onClick={navigateToProfile}
                       >
-                        Anmelden
+                        Mein Konto
                       </button>
                       <button
-                        className={`${styles.tab} ${
-                          showRegistrationForm ? styles.activeTab : ""
-                        }`}
-                        onClick={() => setShowRegistrationForm(true)}
+                        className={styles.accountButton}
+                        onClick={() => navigate("/orders")}
                       >
-                        Registrieren
+                        Meine Bestellungen
                       </button>
-                    </div>
-
-                    {!showRegistrationForm ? (
-                      <form className={styles.authForm} onSubmit={handleLogin}>
-                        {error && (
-                          <p className={styles.errorMessage}>{error}</p>
-                        )}
-
-                        <div className={styles.formGroup}>
-                          <label htmlFor="email">E-Mail</label>
-                          <input
-                            id="email"
-                            type="email"
-                            value={email}
-                            onChange={(e) => setEmail(e.target.value)}
-                            required
-                          />
-                        </div>
-
-                        <div className={styles.formGroup}>
-                          <label htmlFor="password">Passwort</label>
-                          <input
-                            id="password"
-                            type="password"
-                            value={password}
-                            onChange={(e) => setPassword(e.target.value)}
-                            required
-                          />
-                        </div>
-
+                      <button
+                        className={styles.logoutButton}
+                        onClick={handleLogout}
+                      >
+                        Abmelden
+                      </button>
+                    </>
+                  ) : (
+                    <>
+                      <div className={styles.tabs}>
                         <button
-                          type="submit"
-                          className={styles.submitButton}
-                          disabled={loading}
+                          className={`${styles.tab} ${
+                            !showRegistrationForm ? styles.activeTab : ""
+                          }`}
+                          onClick={() => setShowRegistrationForm(false)}
                         >
-                          {loading ? "Anmelden..." : "Anmelden"}
+                          Anmelden
                         </button>
-                      </form>
-                    ) : (
-                      <form
-                        className={styles.authForm}
-                        onSubmit={handleRegistration}
-                      >
-                        {error && (
-                          <p className={styles.errorMessage}>{error}</p>
-                        )}
+                        <button
+                          className={`${styles.tab} ${
+                            showRegistrationForm ? styles.activeTab : ""
+                          }`}
+                          onClick={() => setShowRegistrationForm(true)}
+                        >
+                          Registrieren
+                        </button>
+                      </div>
 
-                        <div className={styles.formGroup}>
-                          <label htmlFor="register-email">E-Mail</label>
-                          <input
-                            id="register-email"
-                            type="email"
-                            value={email}
-                            onChange={(e) => setEmail(e.target.value)}
-                            required
-                          />
-                        </div>
+                      {!showRegistrationForm ? (
+                        <form
+                          className={styles.authForm}
+                          onSubmit={handleLogin}
+                        >
+                          {error && (
+                            <p className={styles.errorMessage}>{error}</p>
+                          )}
 
-                        <div className={styles.formRow}>
                           <div className={styles.formGroup}>
-                            <label htmlFor="first-name">Vorname</label>
+                            <label htmlFor="email">E-Mail</label>
                             <input
-                              id="first-name"
-                              type="text"
-                              value={firstName}
-                              onChange={(e) => setFirstName(e.target.value)}
+                              id="email"
+                              type="email"
+                              value={email}
+                              onChange={(e) => setEmail(e.target.value)}
                               required
                             />
                           </div>
 
                           <div className={styles.formGroup}>
-                            <label htmlFor="last-name">Nachname</label>
+                            <label htmlFor="password">Passwort</label>
                             <input
-                              id="last-name"
-                              type="text"
-                              value={lastName}
-                              onChange={(e) => setLastName(e.target.value)}
+                              id="password"
+                              type="password"
+                              value={password}
+                              onChange={(e) => setPassword(e.target.value)}
                               required
                             />
                           </div>
-                        </div>
 
-                        <div className={styles.formGroup}>
-                          <label htmlFor="register-password">Passwort</label>
-                          <input
-                            id="register-password"
-                            type="password"
-                            value={password}
-                            onChange={(e) => setPassword(e.target.value)}
-                            required
-                          />
-                        </div>
-
-                        <button
-                          type="submit"
-                          className={styles.submitButton}
-                          disabled={loading}
+                          <button
+                            type="submit"
+                            className={styles.submitButton}
+                            disabled={loading}
+                          >
+                            {loading ? "Anmelden..." : "Anmelden"}
+                          </button>
+                        </form>
+                      ) : (
+                        <form
+                          className={styles.authForm}
+                          onSubmit={handleRegistration}
                         >
-                          {loading ? "Registrieren..." : "Konto erstellen"}
-                        </button>
-                      </form>
-                    )}
-                  </>
-                )}
+                          {error && (
+                            <p className={styles.errorMessage}>{error}</p>
+                          )}
+
+                          <div className={styles.formGroup}>
+                            <label htmlFor="register-email">E-Mail</label>
+                            <input
+                              id="register-email"
+                              type="email"
+                              value={email}
+                              onChange={(e) => setEmail(e.target.value)}
+                              required
+                            />
+                          </div>
+
+                          <div className={styles.formRow}>
+                            <div className={styles.formGroup}>
+                              <label htmlFor="first-name">Vorname</label>
+                              <input
+                                id="first-name"
+                                type="text"
+                                value={firstName}
+                                onChange={(e) => setFirstName(e.target.value)}
+                                required
+                              />
+                            </div>
+
+                            <div className={styles.formGroup}>
+                              <label htmlFor="last-name">Nachname</label>
+                              <input
+                                id="last-name"
+                                type="text"
+                                value={lastName}
+                                onChange={(e) => setLastName(e.target.value)}
+                                required
+                              />
+                            </div>
+                          </div>
+
+                          <div className={styles.formGroup}>
+                            <label htmlFor="register-password">Passwort</label>
+                            <input
+                              id="register-password"
+                              type="password"
+                              value={password}
+                              onChange={(e) => setPassword(e.target.value)}
+                              required
+                            />
+                          </div>
+
+                          <button
+                            type="submit"
+                            className={styles.submitButton}
+                            disabled={loading}
+                          >
+                            {loading ? "Registrieren..." : "Konto erstellen"}
+                          </button>
+                        </form>
+                      )}
+                    </>
+                  )}
+                </div>
               </div>
-            </div>
-          )}
+            )}
+          </div>
         </div>
-      </div>
-    </header>
+      </header>
+
+      {/* Cart Sidebar */}
+      <CartSidebar isOpen={showCartSidebar} onClose={handleCartClose} />
+    </>
   );
 };
 

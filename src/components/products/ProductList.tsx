@@ -185,8 +185,6 @@ const ProductList = () => {
   return (
     <div className={styles.productListContainer}>
       <div className={styles.productHeader}>
-        <h1 className={styles.productTitle}>Unsere Produkte</h1>
-
         <div className={styles.productControls}>
           <form className={styles.searchForm} onSubmit={handleSearchSubmit}>
             <input
