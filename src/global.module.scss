@@ -1,0 +1,36 @@
+$primary-color: #646cff;
+$secondary-color: #535bf2;
+$text-color: #213547;
+$background-color: #ffffff;
+$error-color: #ff4d4f;
+$success-color: #52c41a;
+
+:global {
+  * {
+    box-sizing: border-box;
+    margin: 0;
+    padding: 0;
+  }
+
+  body {
+    font-family: "Inter", sans-serif;
+    line-height: 1.5;
+    color: $text-color;
+    background-color: $background-color;
+  }
+
+  .container {
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 0 1rem;
+  }
+}
+
+:export {
+  primaryColor: $primary-color;
+  secondaryColor: $secondary-color;
+  textColor: $text-color;
+  backgroundColor: $background-color;
+  errorColor: $error-color;
+  successColor: $success-color;
+}

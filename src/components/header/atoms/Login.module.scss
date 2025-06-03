@@ -1,0 +1,73 @@
+// src/components/Header/atoms/Login.module.scss
+
+.loginContainer {
+  position: relative;
+}
+
+.loginButton {
+  cursor: pointer;
+
+  &:hover {
+    color: #646cff;
+  }
+}
+
+.dropdown {
+  position: absolute;
+  top: 100%;
+  right: 0;
+  margin-top: 10px;
+  background: white;
+  border-radius: 4px;
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+  min-width: 200px;
+  z-index: 1000;
+}
+
+.loginForm {
+  padding: 16px;
+
+  .formGroup {
+    margin-bottom: 12px;
+
+    label {
+      display: block;
+      margin-bottom: 4px;
+      font-size: 14px;
+    }
+
+    input {
+      width: 100%;
+      padding: 8px;
+      border: 1px solid #ddd;
+      border-radius: 4px;
+      font-size: 14px;
+    }
+  }
+
+  .submitButton {
+    width: 100%;
+    padding: 8px;
+    background: #646cff;
+    color: white;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+
+    &:hover {
+      background: #535bf2;
+    }
+  }
+}
+
+.userMenu {
+  .menuItem {
+    padding: 12px 16px;
+    cursor: pointer;
+
+    &:hover {
+      background: #f5f5f5;
+      color: #646cff;
+    }
+  }
+}

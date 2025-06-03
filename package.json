@@ -1,27 +1,8 @@
 {
-  "name": "pana-react-template",
+  "name": "pana-template",
   "private": true,
   "version": "0.0.0",
   "type": "module",
-  "description": "PANA eCommerce React Template",
-  "main": "dist/index.js",
-  "module": "dist/index.esm.js",
-  "types": "dist/index.d.ts",
-  "files": [
-    "dist"
-  ],
-  "exports": {
-    ".": {
-      "types": "./dist/index.d.ts",
-      "require": "./dist/index.js",
-      "import": "./dist/index.esm.js"
-    },
-    "./dist": {
-      "types": "./dist/index.d.ts",
-      "require": "./dist/index.js",
-      "import": "./dist/index.esm.js"
-    }
-  },
   "scripts": {
     "dev": "vite",
     "build": "tsc -b && vite build",
@@ -29,24 +10,23 @@
     "preview": "vite preview"
   },
   "dependencies": {
-    "@pana-commerce/pana-sdk": "0.0.19",
-    "dotenv": "^16.5.0",
-    "react": "^19.0.0",
-    "react-dom": "^19.0.0",
-    "react-router-dom": "^7.6.0"
+    "@pana-commerce/pana-sdk": "^0.0.19",
+    "react": "^19.1.0",
+    "react-dom": "^19.1.0",
+    "react-router-dom": "^7.6.1"
   },
   "devDependencies": {
-    "@eslint/js": "^9.21.0",
-    "@types/react": "^19.0.10",
-    "@types/react-dom": "^19.0.4",
-    "@vitejs/plugin-react": "^4.3.4",
-    "eslint": "^9.21.0",
-    "eslint-plugin-react-hooks": "^5.1.0",
+    "@eslint/js": "^9.25.0",
+    "@types/react": "^19.1.2",
+    "@types/react-dom": "^19.1.2",
+    "@vitejs/plugin-react": "^4.4.1",
+    "eslint": "^9.25.0",
+    "eslint-plugin-react-hooks": "^5.2.0",
     "eslint-plugin-react-refresh": "^0.4.19",
-    "globals": "^15.15.0",
-    "sass-embedded": "^1.89.0",
-    "typescript": "^5.6.2",
-    "typescript-eslint": "^8.24.1",
-    "vite": "^6.2.0"
+    "globals": "^16.0.0",
+    "sass": "^1.89.1",
+    "typescript": "~5.8.3",
+    "typescript-eslint": "^8.30.1",
+    "vite": "^6.3.5"
   }
 }
