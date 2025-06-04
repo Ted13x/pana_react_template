@@ -8,6 +8,8 @@ const STORE_API_TOKEN = import.meta.env.VITE_PANA_STORE_API_TOKEN;
 let storeClient: PanaStoreClient | null = null;
 let customerClient: PanaCustomerClient | null = null;
 
+const token = getCookie("auth_token");
+
 const getStoreClient = (): PanaStoreClient => {
   if (!storeClient) {
     storeClient = new PanaStoreClient(STORE_API_TOKEN);
@@ -32,8 +34,6 @@ export const login = async (email: string, password: string) => {
 };
 
 export const getCurrentUser = async () => {
-  const token = getCookie("auth_token");
-
   if (!token) {
     return null;
   }

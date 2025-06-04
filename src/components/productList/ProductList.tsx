@@ -49,6 +49,7 @@ const ProductList = () => {
                       </p>
                     )}
                 </div>
+                <button className={styles.addToCart}>Add to Cart</button>
               </>
             )}
           </div>

@@ -1,11 +1,10 @@
-// src/App.tsx
-
 import React, { Suspense } from "react";
 import { StoreProvider } from "./contexts/StoreContext";
 import { CustomerProvider } from "./contexts/CustomerContext";
 import Header from "./components/header/Header";
 import ProductList from "./components/productList/ProductList";
 import ErrorBoundary from "./components/error/ErrorBoundary";
+import Footer from "./components/footer/Footer";
 
 const LoadingFallback = () => <div>Loading...</div>;
 
@@ -22,6 +21,7 @@ function App() {
                   <ProductList />
                 </div>
               </main>
+              <Footer />
             </div>
           </StoreProvider>
         </Suspense>
