@@ -46,6 +46,19 @@ export const getCurrentUser = async () => {
   return userData;
 };
 
+export const getAllCustomerAddresses = async () => {
+  if (!token) {
+    return null;
+  }
+
+  if (!customerClient) {
+    customerClient = new PanaCustomerClient(token);
+  }
+
+  const addresses = await customerClient.getAllAddresses({});
+  return addresses;
+};
+
 export const logout = () => {
   deleteCookie("auth_token");
   customerClient = null;

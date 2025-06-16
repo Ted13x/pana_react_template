@@ -1,0 +1,24 @@
+.customerContainer {
+  display: flex;
+  padding: 40px 0;
+  width: 100%;
+  max-width: 1200px;
+  margin: 0 auto;
+  min-height: calc(100vh - 60px - 230px);
+}
+
+.contentContainer {
+  flex: 1;
+  padding: 0 20px;
+}
+
+@media (max-width: 768px) {
+  .customerContainer {
+    flex-direction: column;
+    padding: 20px 0;
+  }
+
+  .contentContainer {
+    margin-top: 30px;
+  }
+}

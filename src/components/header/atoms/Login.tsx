@@ -1,10 +1,10 @@
-// src/components/Header/atoms/Login.tsx
-
 import React, { useState, useRef, useEffect } from "react";
+import { useNavigate } from "react-router-dom";
 import { useCustomer } from "../../../contexts/CustomerContext";
 import styles from "./Login.module.scss";
 
 const Login = () => {
+  const navigate = useNavigate();
   const { customer, isAuthenticated, login, logout } = useCustomer();
   const [showDropdown, setShowDropdown] = useState(false);
   const [email, setEmail] = useState("");
@@ -39,6 +39,11 @@ const Login = () => {
     setShowDropdown(false);
   };
 
+  const handleNavigateToAccount = () => {
+    navigate("/account");
+    setShowDropdown(false);
+  };
+
   return (
     <div className={styles.loginContainer}>
       <div
@@ -52,7 +57,12 @@ const Login = () => {
         <div className={styles.dropdown} ref={dropdownRef}>
           {isAuthenticated ? (
             <div className={styles.userMenu}>
-              <div className={styles.menuItem}>Benutzereinstellungen</div>
+              <div
+                className={styles.menuItem}
+                onClick={handleNavigateToAccount}
+              >
+                Benutzereinstellungen
+              </div>
               <div className={styles.menuItem}>Bestellungen</div>
               <div className={styles.menuItem} onClick={handleLogout}>
                 Abmelden

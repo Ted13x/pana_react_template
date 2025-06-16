@@ -1,5 +1,5 @@
 import { PanaStoreClient } from "@pana-commerce/pana-sdk";
-import { Store, Product, Category } from "../panaTypes";
+import { Product, Category, Store } from "../panaTypes";
 import { createResource } from "../utils/suspense";
 
 const STORE_API_TOKEN = import.meta.env.VITE_PANA_STORE_API_TOKEN;
