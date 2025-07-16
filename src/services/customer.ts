@@ -8,8 +8,6 @@ const STORE_API_TOKEN = import.meta.env.VITE_PANA_STORE_API_TOKEN;
 let storeClient: PanaStoreClient | null = null;
 let customerClient: PanaCustomerClient | null = null;
 
-const token = getCookie("auth_token");
-
 const getStoreClient = (): PanaStoreClient => {
   if (!storeClient) {
     storeClient = new PanaStoreClient(STORE_API_TOKEN);
@@ -34,25 +32,29 @@ export const login = async (email: string, password: string) => {
 };
 
 export const getCurrentUser = async () => {
-  if (!token) {
+  const currentToken = getCookie("auth_token");
+  
+  if (!currentToken) {
     return null;
   }
 
   if (!customerClient) {
-    customerClient = new PanaCustomerClient(token);
+    customerClient = new PanaCustomerClient(currentToken);
   }
 
-  const userData = await customerClient.getMe();
+  const userData = await customerClient.getCustomer();
   return userData;
 };
 
 export const getAllCustomerAddresses = async () => {
-  if (!token) {
+  const currentToken = getCookie("auth_token");
+  
+  if (!currentToken) {
     return null;
   }
 
   if (!customerClient) {
-    customerClient = new PanaCustomerClient(token);
+    customerClient = new PanaCustomerClient(currentToken);
   }
 
   const addresses = await customerClient.getAllAddresses({});
@@ -62,4 +64,25 @@ export const getAllCustomerAddresses = async () => {
 export const logout = () => {
   deleteCookie("auth_token");
   customerClient = null;
+};
+
+export const addShoppingCartItem = async (
+  productVariantId: number,
+  quantity: number = 1
+) => {
+  const currentToken = getCookie("auth_token");
+  
+  if (!currentToken) {
+    throw new Error("User not authenticated");
+  }
+
+  if (!customerClient) {
+    customerClient = new PanaCustomerClient(currentToken);
+  }
+
+  const cartItem = await customerClient.addShoppingCartItem(productVariantId, {
+    amount: quantity,
+  });
+
+  return cartItem;
 };
