@@ -7,6 +7,7 @@ import { useCart } from "../../contexts/CartContext";
 import { addShoppingCartItem } from "../../services/customer";
 import { Product } from "../../panaTypes";
 import styles from "./ProductList.module.scss";
+import ProductCarousel from "./ProductCarousel";
 
 const ProductList = () => {
   const { products } = useStore();
@@ -49,14 +50,15 @@ const ProductList = () => {
 
   return (
     <div className={styles.productList}>
-      <h2 className={styles.title}>Products ({products.length})</h2>
-      <div className={styles.grid}>
+{/*       <h2 className={styles.title}>Products ({products.length})</h2>
+ */}      <div className={styles.grid}>
         {products.map((product: Product) => {
           const selectedVariant = getSelectedVariant(product);
           
           if (!selectedVariant) return null;
 
           return (
+            <>
             <div key={product.id} className={styles.card}>
               {selectedVariant.medias && selectedVariant.medias.length > 0 && (
                 <div className={styles.imageContainer}>
@@ -73,13 +75,13 @@ const ProductList = () => {
                   {selectedVariant.name || "Unnamed Product"}
                 </h3>
                 
-                {product.brand && (
+               {/*  {product.brand && (
                   <p className={styles.brand}>{product.brand}</p>
-                )}
+                )} */}
                 
-                {product.category && (
+               {/*  {product.category && (
                   <p className={styles.category}>{product.category.name}</p>
-                )}
+                )} */}
                 
                 {selectedVariant.description && (
                   <p className={styles.description}>
@@ -90,7 +92,7 @@ const ProductList = () => {
                 {selectedVariant.prices && selectedVariant.prices.length > 0 && (
                   <p className={styles.price}>
                     {selectedVariant.prices[0].value}{" "}
-                    {selectedVariant.prices[0].currency}
+                    {/* {selectedVariant.prices[0].currency} */}
                   </p>
                 )}
 
@@ -123,6 +125,56 @@ const ProductList = () => {
                 Add to Cart
               </button>
             </div>
+            {/* Zweite Karte mit Carousel */}
+            <div key={`${product.id}-carousel`} className={styles.card}>
+              <div className={styles.imageContainer}>
+                <ProductCarousel
+                  images={selectedVariant.medias ? selectedVariant.medias.map(media => media.url) : []}
+                  productName={selectedVariant.name || "Unnamed Product"}
+                />
+              </div>
+              <div className={styles.content}>
+                <h3 className={styles.name}>
+                  {selectedVariant.name || "Unnamed Product"}
+                </h3>
+                {selectedVariant.description && (
+                  <p className={styles.description}>
+                    {selectedVariant.description}
+                  </p>
+                )}
+                {selectedVariant.prices && selectedVariant.prices.length > 0 && (
+                  <p className={styles.price}>
+                    {selectedVariant.prices[0].value}{" "}
+                  </p>
+                )}
+                {product.variants && product.variants.length > 1 && (
+                  <div className={styles.variantSelector}>
+                    <label className={styles.variantLabel}>Variante auswählen:</label>
+                    <select
+                      value={selectedVariants[product.id] || 0}
+                      onChange={(e) => handleVariantChange(product.id, parseInt(e.target.value))}
+                      className={styles.variantSelect}
+                    >
+                      {product.variants.map((variant, index) => (
+                        <option key={variant.id} value={index}>
+                          {variant.name || `Variante ${index + 1}`}
+                          {variant.prices && variant.prices.length > 0 && 
+                            ` - ${variant.prices[0].value} ${variant.prices[0].currency}`
+                          }
+                        </option>
+                      ))}
+                    </select>
+                  </div>
+                )}
+              </div>
+              <button 
+                className={styles.addToCart}
+                onClick={() => handleAddToCart(selectedVariant.id)}
+              >
+                Add to Cart
+              </button>
+            </div>
+            </>
           );
         })}
       </div>

@@ -1,9 +1,37 @@
-$primary-color: #646cff;
-$secondary-color: #535bf2;
-$background-color: #213547;
-$text-color: #ffffff;
-$error-color: #ff4d4f;
-$success-color: #52c41a;
+// Industrielle Farbpalette (Wildcatter LA Style)
+$primary: #000000;        // Schwarz
+$secondary: #1a1a1a;      // Dunkelgrau
+$tertiary: #8B4513;       // Sattelbraun/Rost
+$accent: #FF4500;         // Orange-Rot
+$white: #ffffff;
+$light-gray: #f5f5f5;
+$gray: #666666;
+$dark-gray: #333333;
+$black: #000000;
+
+// Typografie-Variablen
+$font-family-primary: "Inter", "Roboto", -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+$font-weight-light: 400;
+$font-weight-normal: 600;
+$font-weight-bold: 700;
+$font-weight-black: 900;
+$letter-spacing-small: 1px;
+$letter-spacing-medium: 2px;
+$letter-spacing-large: 3px;
+$letter-spacing-xl: 4px;
+
+// Abgeleitete Farben
+$primary-light: #333333;
+$primary-dark: #000000;
+$secondary-light: #404040;
+$tertiary-light: #A0522D;
+$accent-light: #FF6347;
+
+// Status-Farben
+$error: #dc3545;
+$success: #28a745;
+$warning: #ffc107;
+$info: #17a2b8;
 
 :global {
   * {
@@ -13,14 +41,18 @@ $success-color: #52c41a;
   }
 
   .app {
-    height: 100%;
+    min-height: 100vh;
+    background-color: $white;
+    font-family: $font-family-primary;
   }
 
   body {
-    font-family: "Inter", sans-serif;
-    line-height: 1.5;
-    color: $text-color;
-    background-color: $background-color;
+    font-family: $font-family-primary;
+    line-height: 1.4;
+    color: $black;
+    background-color: $white;
+    font-size: 16px;
+    font-weight: $font-weight-light;
   }
 
   .container {
@@ -28,13 +60,93 @@ $success-color: #52c41a;
     margin: 0 auto;
     padding: 0 1rem;
   }
+
+  // Industrielle Button-Styles
+  button {
+    font-family: $font-family-primary;
+    cursor: pointer;
+    border: 2px solid $black;
+    outline: none;
+    transition: all 0.1s ease;
+    background-color: $white;
+    color: $black;
+    font-weight: $font-weight-normal;
+    text-transform: uppercase;
+    letter-spacing: $letter-spacing-small;
+    
+    &:disabled {
+      cursor: not-allowed;
+      opacity: 0.6;
+      border-color: $gray;
+    }
+
+    &:hover {
+      background-color: $black;
+      color: $white;
+    }
+  }
+
+  // Industrielle Input-Styles
+  input, select, textarea {
+    font-family: $font-family-primary;
+    border: 2px solid $black;
+    border-radius: 0;
+    padding: 12px 16px;
+    font-size: 14px;
+    transition: all 0.1s ease;
+    background-color: $white;
+    color: $black;
+    
+    &:focus {
+      outline: none;
+      border-color: $accent;
+      box-shadow: 0 0 0 2px rgba($accent, 0.2);
+    }
+  }
+
+  // Industrielle Link-Styles
+  a {
+    color: $accent;
+    text-decoration: none;
+    transition: color 0.1s ease;
+    font-weight: $font-weight-normal;
+    
+    &:hover {
+      color: $tertiary;
+    }
+  }
+
+  // Industrielle Typografie
+  h1, h2, h3, h4, h5, h6 {
+    font-family: $font-family-primary;
+    font-weight: $font-weight-bold;
+    text-transform: uppercase;
+    letter-spacing: $letter-spacing-medium;
+    color: $black;
+  }
 }
 
 :export {
-  primaryColor: $primary-color;
-  secondaryColor: $secondary-color;
-  textColor: $text-color;
-  backgroundColor: $background-color;
-  errorColor: $error-color;
-  successColor: $success-color;
+  primary: $primary;
+  secondary: $secondary;
+  tertiary: $tertiary;
+  accent: $accent;
+  white: $white;
+  lightGray: $light-gray;
+  gray: $gray;
+  darkGray: $dark-gray;
+  black: $black;
+  error: $error;
+  success: $success;
+  warning: $warning;
+  info: $info;
+  fontFamilyPrimary: $font-family-primary;
+  fontWeightLight: $font-weight-light;
+  fontWeightNormal: $font-weight-normal;
+  fontWeightBold: $font-weight-bold;
+  fontWeightBlack: $font-weight-black;
+  letterSpacingSmall: $letter-spacing-small;
+  letterSpacingMedium: $letter-spacing-medium;
+  letterSpacingLarge: $letter-spacing-large;
+  letterSpacingXl: $letter-spacing-xl;
 }

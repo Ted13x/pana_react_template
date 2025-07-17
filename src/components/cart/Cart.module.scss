@@ -1,3 +1,5 @@
+@import '../../global.module.scss';
+
 /* Overlay */
 .overlay {
   position: fixed;
@@ -5,11 +7,11 @@
   left: 0;
   width: 100%;
   height: 100vh;
-  background-color: rgba(0, 0, 0, 0.5);
+  background-color: rgba(0, 0, 0, 0.7);
   z-index: 999;
   opacity: 0;
   visibility: hidden;
-  transition: opacity 0.3s ease, visibility 0.3s ease;
+  transition: opacity 0.2s ease, visibility 0.2s ease;
 }
 
 .overlayOpen {
@@ -24,10 +26,10 @@
   right: -500px;
   width: 500px;
   height: 100vh;
-  background-color: white;
+  background-color: $white;
   z-index: 1000;
-  box-shadow: -2px 0 10px rgba(0, 0, 0, 0.1);
-  transition: right 0.3s ease;
+  border-left: 3px solid $accent;
+  transition: right 0.2s ease;
   display: flex;
   flex-direction: column;
 }
@@ -41,30 +43,39 @@
   display: flex;
   justify-content: space-between;
   align-items: center;
-  padding: 20px 24px;
-  border-bottom: 1px solid #e5e5e5;
-  background-color: #f8f9fa;
+  padding: 30px 35px;
+  background-color: $black;
+  color: $white;
+  border-bottom: 3px solid $accent;
 }
 
 .cartTitle {
-  font-size: 20px;
-  font-weight: 600;
-  color: #333;
+  font-size: 24px;
+  font-weight: $font-weight-black;
+  color: $white;
   margin: 0;
+  text-transform: uppercase;
+  letter-spacing: $letter-spacing-large;
+  font-family: $font-family-primary;
 }
 
 .closeButton {
-  background: none;
-  border: none;
+  background: $white;
+  border: 2px solid $white;
   cursor: pointer;
-  padding: 8px;
-  border-radius: 4px;
-  color: #666;
-  transition: background-color 0.2s ease, color 0.2s ease;
+  padding: 12px;
+  color: $black;
+  transition: all 0.1s ease;
+  font-family: $font-family-primary;
 
   &:hover {
-    background-color: #e9ecef;
-    color: #333;
+    background-color: $accent;
+    border-color: $accent;
+    color: $white;
+  }
+
+  &:active {
+    transform: scale(0.95);
   }
 
   svg {
@@ -78,6 +89,7 @@
   flex: 1;
   overflow-y: auto;
   padding: 0;
+  background-color: $white;
 }
 
 /* Empty Cart */
@@ -87,32 +99,43 @@
   align-items: center;
   justify-content: center;
   height: 100%;
-  padding: 40px 24px;
+  padding: 80px 35px;
   text-align: center;
-  color: #666;
+  background-color: $white;
+  margin: 30px;
+  border: 3px solid $black;
 }
 
 .emptyCartIcon {
-  margin-bottom: 20px;
-  color: #ccc;
+  margin-bottom: 30px;
+  color: $gray;
 }
 
 .emptyCart h3 {
-  font-size: 18px;
-  font-weight: 600;
-  margin: 0 0 8px 0;
-  color: #333;
+  font-size: 24px;
+  font-weight: $font-weight-black;
+  margin: 0 0 15px 0;
+  color: $black;
+  text-transform: uppercase;
+  letter-spacing: $letter-spacing-medium;
+  font-family: $font-family-primary;
 }
 
 .emptyCart p {
-  font-size: 14px;
+  font-size: 16px;
   margin: 0;
-  color: #666;
+  color: $dark-gray;
+  line-height: 1.5;
+  font-family: $font-family-primary;
+  font-weight: $font-weight-normal;
 }
 
 /* Cart Items */
 .cartItems {
-  padding: 24px;
+  padding: 35px;
+  background-color: $white;
+  margin: 30px;
+  border: 3px solid $black;
 }
 
 /* Responsive Design */
@@ -123,36 +146,42 @@
   }
   
   .cartHeader {
-    padding: 16px 20px;
+    padding: 25px 30px;
   }
   
   .cartTitle {
-    font-size: 18px;
+    font-size: 20px;
+    letter-spacing: 2px;
   }
   
   .emptyCart {
-    padding: 30px 20px;
+    padding: 60px 30px;
+    margin: 20px;
   }
   
   .cartItems {
-    padding: 20px;
+    padding: 30px;
+    margin: 20px;
   }
 }
 
 @media (max-width: 480px) {
   .cartHeader {
-    padding: 12px 16px;
+    padding: 20px 25px;
   }
   
   .cartTitle {
-    font-size: 16px;
+    font-size: 18px;
+    letter-spacing: 1px;
   }
   
   .emptyCart {
-    padding: 20px 16px;
+    padding: 40px 25px;
+    margin: 15px;
   }
   
   .cartItems {
-    padding: 16px;
+    padding: 25px;
+    margin: 15px;
   }
 }
