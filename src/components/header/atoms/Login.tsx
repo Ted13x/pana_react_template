@@ -1,12 +1,14 @@
 import React, { useState, useRef, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { useCustomer } from "../../../contexts/CustomerContext";
+import RegistrationModal from "../../auth/RegistrationModal";
 import styles from "./Login.module.scss";
 
 const Login = () => {
   const navigate = useNavigate();
   const { customer, isAuthenticated, login, logout } = useCustomer();
   const [showDropdown, setShowDropdown] = useState(false);
+  const [showRegistrationModal, setShowRegistrationModal] = useState(false);
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const dropdownRef = useRef<HTMLDivElement>(null);
@@ -41,6 +43,11 @@ const Login = () => {
 
   const handleNavigateToAccount = () => {
     navigate("/account");
+    setShowDropdown(false);
+  };
+
+  const handleRegistrationSuccess = () => {
+    setShowRegistrationModal(false);
     setShowDropdown(false);
   };
 
@@ -93,10 +100,23 @@ const Login = () => {
               <button type="submit" className={styles.submitButton}>
                 Login
               </button>
+              <button
+                type="button"
+                onClick={() => setShowRegistrationModal(true)}
+                className={styles.registerButton}
+              >
+                Zur Registrierung
+              </button>
             </form>
           )}
         </div>
       )}
+
+      <RegistrationModal
+        isOpen={showRegistrationModal}
+        onClose={() => setShowRegistrationModal(false)}
+        onSuccess={handleRegistrationSuccess}
+      />
     </div>
   );
 };

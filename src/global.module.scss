@@ -46,6 +46,12 @@ $info: #17a2b8;
     font-family: $font-family-primary;
   }
 
+  .main-content {
+    min-height: calc(100vh - 80px - 230px); /* 100vh - header height - footer height */
+    padding-top: 80px; /* Header height */
+    height: calc(100vh - 80px - 230px); /* Feste Höhe für Content-Bereich */
+  }
+
   body {
     font-family: $font-family-primary;
     line-height: 1.4;

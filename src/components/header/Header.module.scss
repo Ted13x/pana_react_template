@@ -28,6 +28,19 @@
           letter-spacing: $letter-spacing-large;
           font-family: $font-family-primary;
         }
+
+        .logoText {
+          cursor: pointer;
+          transition: color 0.1s ease;
+
+          &:hover {
+            color: $accent;
+          }
+
+          &:active {
+            transform: scale(0.98);
+          }
+        }
       }
 
     .nav {

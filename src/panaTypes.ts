@@ -13,3 +13,13 @@ export type ShoppingCart = components["schemas"]["StoreCustomerShoppingCart"];
 export type ShoppingCartItem =
   components["schemas"]["StoreCustomerShoppingCartItem"];
 export type Order = components["schemas"]["StoreCustomerOrder"];
+
+/* registration specific */
+export interface RegistrationFormData {
+  email: string;
+  password: string;
+  confirmPassword: string;
+  firstName: string;
+  lastName: string;
+  [key: string]: string | number; // Für benutzerdefinierte Felder
+}

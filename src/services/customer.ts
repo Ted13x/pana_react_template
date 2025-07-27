@@ -31,6 +31,31 @@ export const login = async (email: string, password: string) => {
   throw new Error("Login failed");
 };
 
+export const register = async (
+  email: string,
+  firstName: string,
+  lastName: string,
+  password: string,
+  customPropertyValues?: Array<{ propertyId: number; value: string | number }>
+) => {
+  const client = getStoreClient();
+
+  const response = await client.register({
+    email,
+    firstName,
+    lastName,
+    password,
+    customerType: 'individual' as any,
+    customPropertyValues: customPropertyValues as any,
+  });
+
+  if (response) {
+    return await login(email, password);
+  }
+
+  throw new Error("Registration failed");
+};
+
 export const getCurrentUser = async () => {
   const currentToken = getCookie("auth_token");
   

@@ -1,18 +1,26 @@
 import React from "react";
+import { useNavigate } from "react-router-dom";
 import { useStore } from "../../contexts/StoreContext";
 import { useCart } from "../../contexts/CartContext";
 import Login from "./atoms/Login";
 import styles from "./Header.module.scss";
 
 const Header = () => {
+  const navigate = useNavigate();
   const { store } = useStore();
   const { openCart, itemCount } = useCart();
+
+  const handleLogoClick = () => {
+    navigate("/");
+  };
 
   return (
     <header className={styles.header}>
       <div className={styles.container}>
         <div className={styles.logo}>
-          <h1>{store.name}</h1>
+          <h1 onClick={handleLogoClick} className={styles.logoText}>
+            {store.name}
+          </h1>
         </div>
         <nav className={styles.nav}>
           <ul>
